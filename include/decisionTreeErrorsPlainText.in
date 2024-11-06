@@ -1,0 +1,2 @@
+ERROR_UNPACK(DECISION_TREE_MEMORY_ALLOCATION_ERROR, 1, "couldn't allocate memory.\n")
+ERROR_UNPACK(DECISION_TREE_INVALID_ARGUMENT,        2, "invalid argument, possibly set to NULL\n")
