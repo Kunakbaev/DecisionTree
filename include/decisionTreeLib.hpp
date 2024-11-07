@@ -7,11 +7,20 @@ typedef void* node_data_type;
 
 struct Node {
     node_data_type   data;
-    Node*            left;
-    Node*            right;
+    size_t           left;
+    size_t           right;
+    size_t           memBuffIndex; // ASK: is this field necessary
 };
 
-DecisionTreeErrors addNewNodeToDecisionTree(Node** startNode, node_data_type value);
-DecisionTreeErrors dumpDecisionTree(const Node* tree);
+struct DecisionTree {
+    size_t root;
+    Node*  memBuff;
+    size_t memBuffSize;
+    size_t freeNodeIndex;
+};
+
+DecisionTreeErrors constructDecisionTree(DecisionTree* tree);
+DecisionTreeErrors addNewNodeToDecisionTree(DecisionTree* tree, node_data_type value);
+DecisionTreeErrors dumpDecisionTree(DecisionTree* tree);
 
 #endif

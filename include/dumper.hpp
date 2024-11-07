@@ -21,7 +21,7 @@ DumperErrors dumperConstructor(Dumper* dumper,
 void dumperAddDebugInfoToAllLogsFile(Dumper* dumper, const char* debugInfo);
 void dumperAddImgToAllLogsFile(Dumper* dumper, const char* imagePath);
 DumperErrors dumperDumpSingleTreeNode(Dumper* dumper, const Node* node);
-DumperErrors dumperDumpDecisionTree(Dumper* dumper, const Node* tree);
+DumperErrors dumperDumpDecisionTree(Dumper* dumper, const DecisionTree* tree);
 DumperErrors dumperDestructor(Dumper* dumper);
 
 const char* getDumperErrorMessage(DumperErrors error);

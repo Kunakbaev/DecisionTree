@@ -18,20 +18,29 @@ int main() {
 
     LOG_INFO("Hello world\n");
 
-    Node* root = NULL;
-    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, (void*)50));
-    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, (void*)30));
-    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, (void*)10));
-    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, (void*)70));
-    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, (void*)65));
-    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, (void*)80));
-    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, (void*)90));
+    DecisionTree tree = {};
+    IF_MAIN_ERR_RETURN(constructDecisionTree(&tree));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&tree, (void*)50));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&tree, (void*)30));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&tree, (void*)10));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&tree, (void*)70));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&tree, (void*)65));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&tree, (void*)80));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&tree, (void*)90));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&tree, (void*)70));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&tree, (void*)65));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&tree, (void*)80));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&tree, (void*)90));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&tree, (void*)70));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&tree, (void*)65));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&tree, (void*)80));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&tree, (void*)90));
 
-    IF_MAIN_ERR_RETURN(dumpDecisionTree(root));
+    IF_MAIN_ERR_RETURN(dumpDecisionTree(&tree));
 
     Dumper dumper = {};
     dumperConstructor(&dumper, 10, "logs", "png");
-    dumperDumpDecisionTree(&dumper, root);
+    dumperDumpDecisionTree(&dumper, &tree);
 
     dumperDestructor(&dumper);
 

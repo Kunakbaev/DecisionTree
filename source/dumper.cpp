@@ -132,13 +132,14 @@ static DumperErrors addNodeDumpStructToBuffer(Dumper* dumper, const Node* node) 
     // FIXME: check that pointer as id works
     if (node != NULL) {
         snprintf(tmpBuffer, TMP_BUFFER_SIZE,
-        "iamnode_id_%x [shape=none, margin=0, fontcolor=white, color=white, label=< \n"
+        "iamnode_id_%zu [shape=none, margin=0, fontcolor=white, color=white, label=< \n"
             "<TABLE cellspacing=\"0\"> \n"
                 "<TR><TD colspan=\"2\">data:  %d</TD></TR>\n"
-                "<TR><TD>left:  %x</TD>\n"
-                "<TD>right: %x</TD></TR>\n"
+                "<TR><TD colspan=\"2\">memIndex:  %d</TD></TR>\n"
+                "<TR><TD>left:  %zu</TD>\n"
+                "<TD>right: %zu</TD></TR>\n"
                 "</TABLE> \n"
-                " >];\n", node, node->data, node->left, node->right);
+                " >];\n", node->memBuffIndex, node->data, node->memBuffIndex, node->left, node->right);
         LOG_DEBUG_VARS(tmpBuffer, node->data);
     } else {
         snprintf(tmpBuffer, TMP_BUFFER_SIZE,
@@ -210,26 +211,34 @@ static void drawLabelToGraphvizVert(int nodeToPoint, const char* labelName) {
     strncat(buffer, tmpBuffer, BUFFER_SIZE);
 }
 
-static DumperErrors drawDecisionTreeRecursively(Dumper* dumper, const Node* tree, const Node* parentPtr) {
+static DumperErrors drawDecisionTreeRecursively(Dumper* dumper, const DecisionTree* tree, size_t nodeInd, size_t parentInd) {
     IF_ARG_NULL_RETURN(dumper);
+    IF_ARG_NULL_RETURN(tree);
 
-    if (tree == NULL) return DUMPER_STATUS_OK;
+    if (nodeInd == 0) // subtree is empty
+        return DUMPER_STATUS_OK;
 
-    IF_ERR_RETURN(addNodeDumpStructToBuffer(dumper, tree));
-    if (parentPtr != NULL) {
+    assert(nodeInd < tree->memBuffSize);
+    Node node = tree->memBuff[nodeInd];
+
+    IF_ERR_RETURN(addNodeDumpStructToBuffer(dumper, &node));
+    if (parentInd != 0) {
         memset(tmpBuffer, 0, TMP_BUFFER_SIZE);
-        if (tree == parentPtr->left) {
-            snprintf(tmpBuffer, TMP_BUFFER_SIZE, "iamnode_id_%x -> iamnode_id_%x [color=orange, fontcolor=white, label=<L>]\n",
-                parentPtr, tree);
+
+        assert(parentInd < tree->memBuffSize);
+        Node parent = tree->memBuff[parentInd];
+        if (nodeInd == parent.left) {
+            snprintf(tmpBuffer, TMP_BUFFER_SIZE, "iamnode_id_%zu -> iamnode_id_%zu [color=orange, fontcolor=white, label=<L>]\n",
+                parentInd, nodeInd);
         } else {
-            snprintf(tmpBuffer, TMP_BUFFER_SIZE, "iamnode_id_%x -> iamnode_id_%x [color=lightblue, fontcolor=white, label=<R>]\n",
-                parentPtr, tree);
+            snprintf(tmpBuffer, TMP_BUFFER_SIZE, "iamnode_id_%zu -> iamnode_id_%zu [color=lightblue, fontcolor=white, label=<R>]\n",
+                parentInd, nodeInd);
         }
         strncat(buffer, tmpBuffer, BUFFER_SIZE);
     }
 
-    IF_ERR_RETURN(drawDecisionTreeRecursively(dumper, tree->left , tree));
-    IF_ERR_RETURN(drawDecisionTreeRecursively(dumper, tree->right, tree));
+    IF_ERR_RETURN(drawDecisionTreeRecursively(dumper, tree, node.left , nodeInd));
+    IF_ERR_RETURN(drawDecisionTreeRecursively(dumper, tree, node.right, nodeInd));
 
     return DUMPER_STATUS_OK;
 }
@@ -241,8 +250,9 @@ static void drawNullNode(Dumper* dumper) {
     strncat(buffer, tmpBuffer, BUFFER_SIZE);
 }
 
-DumperErrors dumperDumpDecisionTree(Dumper* dumper, const Node* tree) {
+DumperErrors dumperDumpDecisionTree(Dumper* dumper, const DecisionTree* tree) {
     IF_ARG_NULL_RETURN(dumper);
+    IF_ARG_NULL_RETURN(tree);
 
     LOG_DEBUG("decision tree dumping ---------------------");
     ++dumper->numberOfLogsBefore;
@@ -269,7 +279,7 @@ DumperErrors dumperDumpDecisionTree(Dumper* dumper, const Node* tree) {
         pad=0.2\n\
     ", BUFFER_SIZE);
 
-    IF_ERR_RETURN(drawDecisionTreeRecursively(dumper, tree, NULL));
+    IF_ERR_RETURN(drawDecisionTreeRecursively(dumper, tree, tree->root, 0));
 
     strncat(buffer, "}\n", BUFFER_SIZE);
     LOG_DEBUG_VARS(buffer);
