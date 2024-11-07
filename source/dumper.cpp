@@ -84,16 +84,14 @@ DumperErrors dumperConstructor(Dumper* dumper,
     // memset(fileFullNameBuffer, 0, FULL_FILE_NAME_BUFFER_SIZE);
     // snprintf(fileFullNameBuffer, FULL_FILE_NAME_BUFFER_SIZE, "rm -rf %s", dirForLogsPath);
     // system(fileFullNameBuffer);
-    // memset(fileFullNameBuffer, 0, FULL_FILE_NAME_BUFFER_SIZE);
-    // snprintf(fileFullNameBuffer, FULL_FILE_NAME_BUFFER_SIZE, "mkdir -p %s", dirForLogsPath);
-    // system(fileFullNameBuffer);
-    // system("rm -rf %s", fileFullNameBuffer);
-    system("mkdir -p logs");
+    memset(fileFullNameBuffer, 0, FULL_FILE_NAME_BUFFER_SIZE);
+    snprintf(fileFullNameBuffer, FULL_FILE_NAME_BUFFER_SIZE, "mkdir -p %s", dirForLogsPath);
+    system(fileFullNameBuffer);
     system("mkdir -p logs/images");
     system("mkdir -p logs/html");
     system("mkdir -p logs/dots");
 
-    dumperAddDebugInfoToAllLogsFile(dumper, "<body style=\"background: black; overflow: scroll; margin: 15px\">");
+    dumperAddDebugInfoToAllLogsFile(dumper, "<body style=\"background: black; overflow: scroll; margin: 15px\">\n");
 
     return DUMPER_STATUS_OK;
 }
@@ -112,6 +110,7 @@ void dumperAddImgToAllLogsFile(Dumper* dumper, const char* imagePath) {
     assert(imagePath != NULL);
 
     fflush(NULL);
+    LOG_DEBUG_VARS(imagePath);
     fprintf(dumper->allLogsFile, "<img src=\"%s\"></img>\n", imagePath);
     fflush(NULL);
     LOG_ERROR("---------------");
@@ -135,9 +134,9 @@ static DumperErrors addNodeDumpStructToBuffer(Dumper* dumper, const Node* node) 
         snprintf(tmpBuffer, TMP_BUFFER_SIZE,
         "iamnode_id_%x [shape=none, margin=0, fontcolor=white, color=white, label=< \n"
             "<TABLE cellspacing=\"0\"> \n"
-                "<TR><TD>data:  %d</TD></TR>\n"
-                "<TR><TD>left:  %x</TD></TR>\n"
-                "<TR><TD>right: %x</TD></TR>\n"
+                "<TR><TD colspan=\"2\">data:  %d</TD></TR>\n"
+                "<TR><TD>left:  %x</TD>\n"
+                "<TD>right: %x</TD></TR>\n"
                 "</TABLE> \n"
                 " >];\n", node, node->data, node->left, node->right);
         LOG_DEBUG_VARS(tmpBuffer, node->data);
@@ -173,7 +172,7 @@ DumperErrors dumperDumpSingleTreeNode(Dumper* dumper, const Node* node) {
         overlap=false\n\
         splines=ortho\n\
         bgcolor=\"black\"\n\
-        rankdir=LR\n\
+        rankdir=TB\n\
         pad=0.2\n\
     ", BUFFER_SIZE);
 
@@ -214,14 +213,20 @@ static void drawLabelToGraphvizVert(int nodeToPoint, const char* labelName) {
 static DumperErrors drawDecisionTreeRecursively(Dumper* dumper, const Node* tree, const Node* parentPtr) {
     IF_ARG_NULL_RETURN(dumper);
 
+    if (tree == NULL) return DUMPER_STATUS_OK;
+
     IF_ERR_RETURN(addNodeDumpStructToBuffer(dumper, tree));
     if (parentPtr != NULL) {
         memset(tmpBuffer, 0, TMP_BUFFER_SIZE);
-        snprintf(tmpBuffer, TMP_BUFFER_SIZE, "iamnode_id_%x -> iamnode_id_%x [color=white]\n", parentPtr, tree);
+        if (tree == parentPtr->left) {
+            snprintf(tmpBuffer, TMP_BUFFER_SIZE, "iamnode_id_%x -> iamnode_id_%x [color=orange, fontcolor=white, label=<L>]\n",
+                parentPtr, tree);
+        } else {
+            snprintf(tmpBuffer, TMP_BUFFER_SIZE, "iamnode_id_%x -> iamnode_id_%x [color=lightblue, fontcolor=white, label=<R>]\n",
+                parentPtr, tree);
+        }
         strncat(buffer, tmpBuffer, BUFFER_SIZE);
     }
-
-    if (tree == NULL) return DUMPER_STATUS_OK;
 
     IF_ERR_RETURN(drawDecisionTreeRecursively(dumper, tree->left , tree));
     IF_ERR_RETURN(drawDecisionTreeRecursively(dumper, tree->right, tree));
@@ -260,11 +265,10 @@ DumperErrors dumperDumpDecisionTree(Dumper* dumper, const Node* tree) {
     strncat(buffer, "digraph html {\n\
         overlap=false\n\
         bgcolor=\"black\"\n\
-        rankdir=LR\n\
+        rankdir=TD\n\
         pad=0.2\n\
     ", BUFFER_SIZE);
 
-    drawNullNode(dumper);
     IF_ERR_RETURN(drawDecisionTreeRecursively(dumper, tree, NULL));
 
     strncat(buffer, "}\n", BUFFER_SIZE);
@@ -285,9 +289,6 @@ DumperErrors dumperDumpDecisionTree(Dumper* dumper, const Node* tree) {
     LOG_DEBUG_VARS(fileFullNameBuffer);
     // WARNING: some nasty command can be substituted
     system(fileFullNameBuffer);
-
-    // IF_ERR_RETURN(addDumpToHtmlFile(dumper, list));
-
 
     memset(fileFullNameBuffer, 0, FILE_NAME_BUFFER_SIZE);
     snprintf(fileFullNameBuffer, FULL_FILE_NAME_BUFFER_SIZE,

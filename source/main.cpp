@@ -19,12 +19,13 @@ int main() {
     LOG_INFO("Hello world\n");
 
     Node* root = NULL;
-    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, 50));
-    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, 30));
-    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, 10));
-    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, 70));
-    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, 65));
-    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, 80));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, (void*)50));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, (void*)30));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, (void*)10));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, (void*)70));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, (void*)65));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, (void*)80));
+    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(&root, (void*)90));
 
     IF_MAIN_ERR_RETURN(dumpDecisionTree(root));
 
@@ -32,6 +33,7 @@ int main() {
     dumperConstructor(&dumper, 10, "logs", "png");
     dumperDumpDecisionTree(&dumper, root);
 
+    dumperDestructor(&dumper);
 
     return 0;
 }

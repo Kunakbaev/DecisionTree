@@ -3,7 +3,7 @@
 
 #include "decisionTreeErrors.hpp"
 
-typedef int node_data_type;
+typedef void* node_data_type;
 
 struct Node {
     node_data_type   data;
