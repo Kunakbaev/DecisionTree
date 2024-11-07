@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include "../include/decisionTreeLib.hpp"
+#include "../include/dumper.hpp"
 
 #define IF_ARG_NULL_RETURN(arg) \
     COMMON_IF_ARG_NULL_RETURN(arg, DECISION_TREE_INVALID_ARGUMENT, getDecisionTreeErrorMessage)
@@ -14,7 +15,8 @@
 #define IF_NOT_COND_RETURN(condition, error) \
     COMMON_IF_NOT_COND_RETURN(condition, error, getDecisionTreeErrorMessage)\
 
-const size_t MIN_MEM_BUFF_SIZE = 8;
+const size_t MIN_MEM_BUFF_SIZE  = 8;
+const size_t OUTPUT_BUFFER_SIZE = 1 << 9;
 
 static void initMemBuff(DecisionTree* tree) {
     assert(tree != NULL);
@@ -24,8 +26,9 @@ static void initMemBuff(DecisionTree* tree) {
     }
 }
 
-DecisionTreeErrors constructDecisionTree(DecisionTree* tree) {
+DecisionTreeErrors constructDecisionTree(DecisionTree* tree, Dumper* dumper) {
     IF_ARG_NULL_RETURN(tree);
+    IF_ARG_NULL_RETURN(dumper);
 
     *tree = {};
     tree->root          = NULL;
@@ -34,6 +37,7 @@ DecisionTreeErrors constructDecisionTree(DecisionTree* tree) {
                        DECISION_TREE_MEMORY_ALLOCATION_ERROR);
     tree->memBuffSize   = MIN_MEM_BUFF_SIZE;
     tree->freeNodeIndex = 0; // 0 index is equal to NULL
+    tree->dumper        = *dumper;
     initMemBuff(tree);
 
     return DECISION_TREE_STATUS_OK;
@@ -128,24 +132,30 @@ DecisionTreeErrors addNewNodeToDecisionTree(DecisionTree* tree, node_data_type v
     return DECISION_TREE_STATUS_OK;
 }
 
-DecisionTreeErrors dumpDecisionTreeInConsole(const DecisionTree* tree, size_t nodeIndex) {
+DecisionTreeErrors dumpDecisionTreeInConsole(const DecisionTree* tree, size_t nodeIndex,
+                                             char** outputBuffer) {
     IF_ARG_NULL_RETURN(tree);
 
+    // ASK: is strcat faster than sprintf
     if (nodeIndex == 0) {
-        printf("?");
+        strncat(*outputBuffer, "?", OUTPUT_BUFFER_SIZE);
+        ++(*outputBuffer);
         return DECISION_TREE_STATUS_OK;
     }
 
-    printf("(");
+    strncat(*outputBuffer, "(", OUTPUT_BUFFER_SIZE);
+    ++(*outputBuffer);
 
     LOG_DEBUG_VARS(nodeIndex, tree->memBuffSize);
     assert(nodeIndex < tree->memBuffSize);
     Node node = tree->memBuff[nodeIndex];
-    IF_ERR_RETURN(dumpDecisionTreeInConsole(tree, node.left));
-    printf(" %d ", node.data);
-    IF_ERR_RETURN(dumpDecisionTreeInConsole(tree, node.right));
+    IF_ERR_RETURN(dumpDecisionTreeInConsole(tree, node.left, outputBuffer));
+    (*outputBuffer) += snprintf(*outputBuffer, OUTPUT_BUFFER_SIZE, " %d ", node.data);
 
-    printf(")");
+    IF_ERR_RETURN(dumpDecisionTreeInConsole(tree, node.right, outputBuffer));
+
+    strncat(*outputBuffer, ")", OUTPUT_BUFFER_SIZE);
+    ++(*outputBuffer);
 
     return DECISION_TREE_STATUS_OK;
 }
@@ -153,10 +163,23 @@ DecisionTreeErrors dumpDecisionTreeInConsole(const DecisionTree* tree, size_t no
 DecisionTreeErrors dumpDecisionTree(DecisionTree* tree) {
     IF_ARG_NULL_RETURN(tree);
 
-    printf("--------------------------------------\n");
-    printf("decision tree:\n");
-    IF_ERR_RETURN(dumpDecisionTreeInConsole(tree, tree->root));
-    printf("\n");
+    LOG_DEBUG("--------------------------------------\n");
+    LOG_DEBUG("decision tree:\n");
+    DEBUG_MESSAGE_TO_DUMPER_ALL_LOGS_FILE(&tree->dumper, "--------------------------------------\n");
+    DEBUG_MESSAGE_TO_DUMPER_ALL_LOGS_FILE(&tree->dumper, "decision tree:\n");
+
+    char* outputBuffer = (char*)calloc(OUTPUT_BUFFER_SIZE, sizeof(char)); // ASK: is this ok?
+    IF_NOT_COND_RETURN(outputBuffer != NULL,
+                       DECISION_TREE_MEMORY_ALLOCATION_ERROR);
+
+    char* targetPtr = outputBuffer;
+    IF_ERR_RETURN(dumpDecisionTreeInConsole(tree, tree->root, &targetPtr));
+    LOG_DEBUG(outputBuffer);
+    DEBUG_MESSAGE_TO_DUMPER_ALL_LOGS_FILE(&tree->dumper, outputBuffer);
+    FREE(outputBuffer);
+
+    // FIXME: add dumper err check
+    dumperDumpDecisionTree(&tree->dumper, tree, tree->freeNodeIndex);
 
     return DECISION_TREE_STATUS_OK;
 }
@@ -167,6 +190,7 @@ DecisionTreeErrors destructDecisionTree(DecisionTree* tree) {
     FREE(tree->memBuff);
     tree->memBuffSize   = 0;
     tree->freeNodeIndex = 0;
+    dumperDestructor(&tree->dumper);
 
     return DECISION_TREE_STATUS_OK;
 }

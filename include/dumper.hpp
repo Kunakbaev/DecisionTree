@@ -20,8 +20,9 @@ DumperErrors dumperConstructor(Dumper* dumper,
                                const char* outputFileFormat);
 void dumperAddDebugInfoToAllLogsFile(Dumper* dumper, const char* debugInfo);
 void dumperAddImgToAllLogsFile(Dumper* dumper, const char* imagePath);
-DumperErrors dumperDumpSingleTreeNode(Dumper* dumper, const Node* node);
-DumperErrors dumperDumpDecisionTree(Dumper* dumper, const DecisionTree* tree);
+DumperErrors dumperDumpSingleTreeNode(Dumper* dumper, const Node* node, size_t highlightedNodeInd);
+DumperErrors dumperDumpDecisionTree(Dumper* dumper, const DecisionTree* tree,
+                                    size_t highlightedNodeInd);
 DumperErrors dumperDestructor(Dumper* dumper);
 
 const char* getDumperErrorMessage(DumperErrors error);

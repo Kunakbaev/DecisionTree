@@ -2,6 +2,7 @@
 #define DECISION_TREE_LIB_HPP
 
 #include "decisionTreeErrors.hpp"
+#include "dumperStruct.hpp"
 
 typedef void* node_data_type;
 
@@ -17,9 +18,10 @@ struct DecisionTree {
     Node*  memBuff;
     size_t memBuffSize;
     size_t freeNodeIndex;
+    Dumper dumper;
 };
 
-DecisionTreeErrors constructDecisionTree(DecisionTree* tree);
+DecisionTreeErrors constructDecisionTree(DecisionTree* tree, Dumper* dumper);
 DecisionTreeErrors addNewNodeToDecisionTree(DecisionTree* tree, node_data_type value);
 DecisionTreeErrors dumpDecisionTree(DecisionTree* tree);
 
