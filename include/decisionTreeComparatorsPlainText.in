@@ -1,0 +1,9 @@
+CMP(cmpNumbersLess,        a < b)
+CMP(cmpNumbersLessEqual,   a <= b)
+CMP(cmpNumbersBigger,      a > b)
+CMP(cmpNumbersBiggerEqual, a >= b)
+CMP(cmpStringsLess,        strcmp((const char*)a, (const char*)b) < 0)
+CMP(cmpStringsLessEqual,   strcmp((const char*)a, (const char*)b) <= 0)
+CMP(cmpStringsBigger,      strcmp((const char*)a, (const char*)b) > 0)
+CMP(cmpStringsBiggerEqual, strcmp((const char*)a, (const char*)b) >= 0)
+

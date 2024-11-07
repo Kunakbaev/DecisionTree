@@ -26,18 +26,21 @@ static void initMemBuff(DecisionTree* tree) {
     }
 }
 
-DecisionTreeErrors constructDecisionTree(DecisionTree* tree, Dumper* dumper) {
+DecisionTreeErrors constructDecisionTree(DecisionTree* tree, Dumper* dumper,
+                                         decisionTreeCompFuncPtr comparator,
+                                         const char* formatForNodeData) {
     IF_ARG_NULL_RETURN(tree);
     IF_ARG_NULL_RETURN(dumper);
 
-    *tree = {};
-    tree->root          = NULL;
-    tree->memBuff       = (Node*)calloc(MIN_MEM_BUFF_SIZE, sizeof(Node));
+    tree->root              = NULL;
+    tree->memBuff           = (Node*)calloc(MIN_MEM_BUFF_SIZE, sizeof(Node));
     IF_NOT_COND_RETURN(tree->memBuff != NULL,
                        DECISION_TREE_MEMORY_ALLOCATION_ERROR);
-    tree->memBuffSize   = MIN_MEM_BUFF_SIZE;
-    tree->freeNodeIndex = 0; // 0 index is equal to NULL
-    tree->dumper        = *dumper;
+    tree->memBuffSize       = MIN_MEM_BUFF_SIZE;
+    tree->freeNodeIndex     = 0; // 0 index is equal to NULL
+    tree->dumper            = *dumper;
+    tree->comparator        = comparator;
+    tree->formatForNodeData = formatForNodeData;
     initMemBuff(tree);
 
     return DECISION_TREE_STATUS_OK;
@@ -94,7 +97,7 @@ DecisionTreeErrors getNewNode(DecisionTree* tree, size_t* newNodeIndex) {
     return DECISION_TREE_STATUS_OK;
 }
 
-DecisionTreeErrors addNewNodeToDecisionTree(DecisionTree* tree, node_data_type value) {
+DecisionTreeErrors addNewNodeToDecisionTree(DecisionTree* tree, const void* value) {
     IF_ARG_NULL_RETURN(tree);
 
     size_t currentNodeInd = tree->root;
@@ -102,7 +105,8 @@ DecisionTreeErrors addNewNodeToDecisionTree(DecisionTree* tree, node_data_type v
         assert(currentNodeInd < tree->memBuffSize);
         Node node = tree->memBuff[currentNodeInd];
 
-        size_t next = (value <= node.data ? node.left : node.right);
+        bool cmpResult = (*tree->comparator)(value, node.data);
+        size_t next = (cmpResult ? node.left : node.right);
         if (next == 0) // ASK: cringe?
             break;
         currentNodeInd = next;
@@ -110,7 +114,7 @@ DecisionTreeErrors addNewNodeToDecisionTree(DecisionTree* tree, node_data_type v
 
     size_t newNodeIndex = 0;
     IF_ERR_RETURN(getNewNode(tree, &newNodeIndex));
-    tree->memBuff[newNodeIndex].data = value;
+    tree->memBuff[newNodeIndex].data = (void*)value;
     LOG_DEBUG_VARS(newNodeIndex);
 
     if (currentNodeInd == 0) { // tree was empty
@@ -120,7 +124,9 @@ DecisionTreeErrors addNewNodeToDecisionTree(DecisionTree* tree, node_data_type v
     } else {
         assert(currentNodeInd < tree->memBuffSize);
         Node* node = &tree->memBuff[currentNodeInd];
-        if (value <= node->data) {
+        bool cmpResult = (*tree->comparator)(value, node->data);
+
+        if (cmpResult) {
             node->left = newNodeIndex;
             LOG_DEBUG("insert to left son");
         } else {

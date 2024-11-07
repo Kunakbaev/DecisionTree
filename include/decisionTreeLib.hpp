@@ -4,25 +4,38 @@
 #include "decisionTreeErrors.hpp"
 #include "dumperStruct.hpp"
 
-typedef void* node_data_type;
+typedef bool (decisionTreeCompFuncPtr)(const void* a, const void* b);
 
 struct Node {
-    node_data_type   data;
+    void*            data;
     size_t           left;
     size_t           right;
     size_t           memBuffIndex; // ASK: is this field necessary
 };
 
 struct DecisionTree {
-    size_t root;
-    Node*  memBuff;
-    size_t memBuffSize;
-    size_t freeNodeIndex;
-    Dumper dumper;
+    size_t                   root;
+    Node*                    memBuff;
+    size_t                   memBuffSize;
+    size_t                   freeNodeIndex;
+    Dumper                   dumper;
+    decisionTreeCompFuncPtr* comparator;
+    const char*              formatForNodeData; // ASK: how to make it const
 };
 
-DecisionTreeErrors constructDecisionTree(DecisionTree* tree, Dumper* dumper);
-DecisionTreeErrors addNewNodeToDecisionTree(DecisionTree* tree, node_data_type value);
+DecisionTreeErrors constructDecisionTree(DecisionTree* tree, Dumper* dumper,
+                                         decisionTreeCompFuncPtr comparator,
+                                         const char* formatForNodeData);
+DecisionTreeErrors addNewNodeToDecisionTree(DecisionTree* tree, const void* value);
 DecisionTreeErrors dumpDecisionTree(DecisionTree* tree);
+
+// comparators for decision tree
+
+#define CMP(comparatorName, code) \
+    bool comparatorName(const void* a, const void* b);
+
+#include "../include/decisionTreeComparatorsPlainText.in"
+
+#undef CMP
 
 #endif
