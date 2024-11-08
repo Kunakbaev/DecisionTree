@@ -18,11 +18,13 @@ const size_t FILE_NAME_BUFFER_SIZE      = 100;
 const size_t FULL_FILE_NAME_BUFFER_SIZE = 200;
 const size_t BUFFER_SIZE                = 1 << 13;
 const size_t TMP_BUFFER_SIZE            = 1 << 10;
+const size_t FORMAT_SPEC_LEN            = 5;
+const size_t COLOR_LEN                  = 10;
 
-char* fileFullNameBuffer                = NULL;
-char* fileNameBuffer                    = NULL;
-char* tmpBuffer                         = NULL; // ASK: how to get rid of it? Like, make strcat and sprintf at the same time
-char* buffer                            = NULL;
+static char* fileFullNameBuffer                = NULL;
+static char* fileNameBuffer                    = NULL;
+static char* tmpBuffer                         = NULL; // ASK: how to get rid of it? Like, make strcat and sprintf at the same time
+static char* buffer                            = NULL;
 
 const char* getDumperErrorMessage(DumperErrors error) {
     switch (error) {
@@ -65,18 +67,18 @@ DumperErrors dumperConstructor(Dumper* dumper,
     IF_NOT_COND_RETURN(dumper->allLogsFile != NULL,
                        DUMPER_ERROR_COULD_OPEN_FILE);
     FREE(allLogsFilePath);
-    setvbuf(dumper->allLogsFile, NULL, 0, _IOFBF);
+    setvbuf(dumper->allLogsFile, NULL, 0, _IONBF);
 
     fileFullNameBuffer = (char*)calloc(FULL_FILE_NAME_BUFFER_SIZE, sizeof(char));
     IF_NOT_COND_RETURN(fileFullNameBuffer != NULL,
                        DUMPER_ERROR_MEMORY_ALLOCATION_ERROR);
-    fileNameBuffer = (char*)calloc(FILE_NAME_BUFFER_SIZE, sizeof(char));
+    fileNameBuffer     = (char*)calloc(FILE_NAME_BUFFER_SIZE,      sizeof(char));
     IF_NOT_COND_RETURN(fileNameBuffer != NULL,
                        DUMPER_ERROR_MEMORY_ALLOCATION_ERROR);
-    tmpBuffer = (char*)calloc(TMP_BUFFER_SIZE, sizeof(char));
+    tmpBuffer          = (char*)calloc(TMP_BUFFER_SIZE,            sizeof(char));
     IF_NOT_COND_RETURN(tmpBuffer != NULL,
                        DUMPER_ERROR_MEMORY_ALLOCATION_ERROR);
-    buffer = (char*)calloc(BUFFER_SIZE, sizeof(char));
+    buffer             = (char*)calloc(BUFFER_SIZE,                sizeof(char));
     IF_NOT_COND_RETURN(buffer != NULL,
                        DUMPER_ERROR_MEMORY_ALLOCATION_ERROR);
 
@@ -100,20 +102,16 @@ void dumperAddDebugInfoToAllLogsFile(Dumper* dumper, const char* debugInfo) {
     assert(dumper    != NULL);
     assert(debugInfo != NULL);
 
-    // fprintf(dumper->allLogsFile, "<p>%s</p>\n", debugInfo);
     fprintf(dumper->allLogsFile, debugInfo);
-    fflush(dumper->allLogsFile);
 }
 
 void dumperAddImgToAllLogsFile(Dumper* dumper, const char* imagePath) {
     assert(dumper    != NULL);
     assert(imagePath != NULL);
 
-    fflush(NULL);
     LOG_DEBUG_VARS(imagePath);
     fprintf(dumper->allLogsFile, "<img src=\"%s\"></img>\n", imagePath);
-    fflush(NULL);
-    LOG_ERROR("---------------");
+    LOG_DEBUG("---------------");
 }
 
 static DumperErrors addNodeDumpStructToBuffer(Dumper* dumper, const char* formatForNodeData,
@@ -131,22 +129,25 @@ static DumperErrors addNodeDumpStructToBuffer(Dumper* dumper, const char* format
     // LOG_DEBUG_VARS(dataString, node->data);
 
     memset(tmpBuffer, 0, TMP_BUFFER_SIZE);
-    // FIXME: check that pointer as id works
-    char color[10] = {}; // ASK: should be normal, because 10 is not a lot of memory
+    char color[COLOR_LEN] = {};
+    const char* greenColor = "green";
+    const char* whiteColor = "white";
     if (highlightedNodeInd == node->memBuffIndex)
-        memcpy(color, "green", 5);
+        memcpy(color, greenColor, strlen(greenColor));
     else
-        memcpy(color, "white", 5);
+        memcpy(color, whiteColor, strlen(whiteColor));
 
-    char formatSpec[5];
+    char formatSpec[FORMAT_SPEC_LEN] = {};
+    size_t formatLen = strlen(formatForNodeData);
+    assert(formatLen <= FORMAT_SPEC_LEN);
     memcpy(formatSpec, formatForNodeData, strlen(formatForNodeData));
     // ASK: how to specify format?
     if (node != NULL) {
         snprintf(tmpBuffer, TMP_BUFFER_SIZE,
         "iamnode_id_%zu [shape=none, margin=0, fontcolor=white, color=%s, label=< \n"
             "<TABLE cellspacing=\"0\"> \n"
-                "<TR><TD colspan=\"2\">data:  %s</TD></TR>\n"
-                "<TR><TD colspan=\"2\">memIndex:  %d</TD></TR>\n"
+                "<TR><TD colspan=\"2\">data:  %d</TD></TR>\n"
+                "<TR><TD colspan=\"2\">memIndex:  %zu</TD></TR>\n"
                 "<TR><TD>left:  %zu</TD>\n"
                 "<TD>right: %zu</TD></TR>\n"
                 "</TABLE> \n"
@@ -171,7 +172,7 @@ DumperErrors dumperDumpSingleTreeNode(Dumper* dumper, const Node* node, size_t h
     ++dumper->numberOfLogsBefore;
     memset(fileNameBuffer, 0, FILE_NAME_BUFFER_SIZE);
     snprintf(fileNameBuffer, FILE_NAME_BUFFER_SIZE,
-             "dots/%d_node.dot", dumper->numberOfLogsBefore);
+             "dots/%zu_node.dot", dumper->numberOfLogsBefore);
 
     memset(fileFullNameBuffer, 0, FULL_FILE_NAME_BUFFER_SIZE);
     snprintf(fileFullNameBuffer, FULL_FILE_NAME_BUFFER_SIZE,
@@ -196,32 +197,15 @@ DumperErrors dumperDumpSingleTreeNode(Dumper* dumper, const Node* node, size_t h
     fclose(outputFile);
 
     memset(fileNameBuffer, 0, FILE_NAME_BUFFER_SIZE);
-    snprintf(fileNameBuffer, FILE_NAME_BUFFER_SIZE, "%d_node.%s",
+    snprintf(fileNameBuffer, FILE_NAME_BUFFER_SIZE, "%zu_node.%s",
             dumper->numberOfLogsBefore, dumper->outputFileFormat);
 
     memset(fileFullNameBuffer, 0, FILE_NAME_BUFFER_SIZE);
     snprintf(fileFullNameBuffer, FULL_FILE_NAME_BUFFER_SIZE,
-            "dot -Tpng logs/dots/%d_node.dot -o  %s/images/%s",
+            "dot -Tpng logs/dots/%zu_node.dot -o  %s/images/%s",
             dumper->numberOfLogsBefore, dumper->dirForLogsPath, fileNameBuffer);
     system(fileFullNameBuffer);
     return DUMPER_STATUS_OK;
-}
-
-static void drawLabelToGraphvizVert(int nodeToPoint, const char* labelName) {
-    assert(buffer != NULL);
-    assert(labelName != NULL);
-
-    memset(tmpBuffer, 0, TMP_BUFFER_SIZE);
-    snprintf(tmpBuffer, TMP_BUFFER_SIZE,
-        "%sPointer [shape=rect, fontcolor=white, color=white, label=\"%s\"]\n",
-        labelName, labelName);
-    strncat(buffer, tmpBuffer, BUFFER_SIZE);
-
-    memset(tmpBuffer, 0, TMP_BUFFER_SIZE);
-    snprintf(tmpBuffer, TMP_BUFFER_SIZE,
-        "%sPointer -> %d [color=orange]\n",
-        labelName, nodeToPoint);
-    strncat(buffer, tmpBuffer, BUFFER_SIZE);
 }
 
 static DumperErrors drawDecisionTreeRecursively(Dumper* dumper, const DecisionTree* tree,
@@ -257,13 +241,6 @@ static DumperErrors drawDecisionTreeRecursively(Dumper* dumper, const DecisionTr
     return DUMPER_STATUS_OK;
 }
 
-static void drawNullNode(Dumper* dumper) {
-    memset(tmpBuffer, 0, TMP_BUFFER_SIZE);
-    snprintf(tmpBuffer, TMP_BUFFER_SIZE,
-        "-1 [shape=rect, fontcolor=white, color=white, label=\"null pointer\"]\n");
-    strncat(buffer, tmpBuffer, BUFFER_SIZE);
-}
-
 DumperErrors dumperDumpDecisionTree(Dumper* dumper, const DecisionTree* tree,
                                     size_t highlightedNodeInd) {
     IF_ARG_NULL_RETURN(dumper);
@@ -273,8 +250,8 @@ DumperErrors dumperDumpDecisionTree(Dumper* dumper, const DecisionTree* tree,
     ++dumper->numberOfLogsBefore;
     memset(fileNameBuffer, 0, FILE_NAME_BUFFER_SIZE);
     // TODO: rewrite with snprintf
-    snprintf(fileNameBuffer, FILE_NAME_BUFFER_SIZE, "dots/%d_list.dot",
-             dumper->numberOfLogsBefore, dumper->outputFileFormat);
+    snprintf(fileNameBuffer, FILE_NAME_BUFFER_SIZE, "dots/%zu_list.dot",
+             dumper->numberOfLogsBefore);
 
     memset(fileFullNameBuffer, 0, FULL_FILE_NAME_BUFFER_SIZE);
     snprintf(fileFullNameBuffer, FULL_FILE_NAME_BUFFER_SIZE,
@@ -303,13 +280,13 @@ DumperErrors dumperDumpDecisionTree(Dumper* dumper, const DecisionTree* tree,
 
     memset(fileNameBuffer, 0, FILE_NAME_BUFFER_SIZE);
     snprintf(fileNameBuffer, FILE_NAME_BUFFER_SIZE,
-            "%d_list.%s", dumper->numberOfLogsBefore, dumper->outputFileFormat);
+            "%zu_list.%s", dumper->numberOfLogsBefore, dumper->outputFileFormat);
     LOG_DEBUG_VARS(fileNameBuffer);
 
     // TODO: put assert for ;
     memset(fileFullNameBuffer, 0, FILE_NAME_BUFFER_SIZE);
     snprintf(fileFullNameBuffer, FULL_FILE_NAME_BUFFER_SIZE,
-             "dot -Tpng logs/dots/%d_list.dot -o %s/images/%s",
+             "dot -Tpng logs/dots/%zu_list.dot -o %s/images/%s",
             dumper->numberOfLogsBefore, dumper->dirForLogsPath, fileNameBuffer);
     LOG_DEBUG_VARS(fileFullNameBuffer);
     // WARNING: some nasty command can be substituted
@@ -333,7 +310,9 @@ DumperErrors dumperDestructor(Dumper* dumper) {
     FREE(tmpBuffer);
     FREE(buffer);
     FREE(fileFullNameBuffer);
-    FREE(dumper->allLogsFile);
+
+    // ASK: why if free than memory leak?
+    fclose(dumper->allLogsFile);
     *dumper = {};
 
     return DUMPER_STATUS_OK;

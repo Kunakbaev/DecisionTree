@@ -28,6 +28,7 @@ DecisionTreeErrors constructDecisionTree(DecisionTree* tree, Dumper* dumper,
                                          const char* formatForNodeData);
 DecisionTreeErrors addNewNodeToDecisionTree(DecisionTree* tree, const void* value);
 DecisionTreeErrors dumpDecisionTree(DecisionTree* tree);
+DecisionTreeErrors destructDecisionTree(DecisionTree* tree);
 
 // comparators for decision tree
 

@@ -8,9 +8,9 @@
 
 enum DecisionTreeErrors {
     DECISION_TREE_STATUS_OK             = 0,
-    // #include "decisionTreeErrorsPlainText.in"
-    DECISION_TREE_MEMORY_ALLOCATION_ERROR = 1, // "couldn't allocate memory.\n")
-    DECISION_TREE_INVALID_ARGUMENT =        2, // "invalid argument, possibly set to NULL\n")
+    #include "decisionTreeErrorsPlainText.in"
+    //DECISION_TREE_MEMORY_ALLOCATION_ERROR = 1, // "couldn't allocate memory.\n")
+    //DECISION_TREE_INVALID_ARGUMENT =        2, // "invalid argument, possibly set to NULL\n")
 };
 
 #undef ERROR_UNPACK

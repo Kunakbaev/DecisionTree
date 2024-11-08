@@ -31,8 +31,10 @@ DecisionTreeErrors constructDecisionTree(DecisionTree* tree, Dumper* dumper,
                                          const char* formatForNodeData) {
     IF_ARG_NULL_RETURN(tree);
     IF_ARG_NULL_RETURN(dumper);
+    IF_ARG_NULL_RETURN(comparator);
+    IF_ARG_NULL_RETURN(formatForNodeData);
 
-    tree->root              = NULL;
+    tree->root              = 0;
     tree->memBuff           = (Node*)calloc(MIN_MEM_BUFF_SIZE, sizeof(Node));
     IF_NOT_COND_RETURN(tree->memBuff != NULL,
                        DECISION_TREE_MEMORY_ALLOCATION_ERROR);
@@ -56,9 +58,9 @@ static DecisionTreeErrors resizeMemBuffer(DecisionTree* tree, size_t newSize) {
         return DECISION_TREE_STATUS_OK;
 
     size_t oldSize = tree->memBuffSize;
-    size_t deltaSize = tree->memBuffSize > newSize ?
-                            tree->memBuffSize - newSize :
-                            newSize - tree->memBuffSize;
+    size_t deltaSize = tree->memBuffSize > newSize
+                            ? tree->memBuffSize - newSize
+                            : newSize - tree->memBuffSize;
     size_t deltaBytes = deltaSize * sizeof(Node);
 
     if (oldSize > newSize) {
@@ -82,7 +84,7 @@ static DecisionTreeErrors resizeMemBuffer(DecisionTree* tree, size_t newSize) {
     return DECISION_TREE_STATUS_OK;
 }
 
-DecisionTreeErrors getNewNode(DecisionTree* tree, size_t* newNodeIndex) {
+static DecisionTreeErrors getNewNode(DecisionTree* tree, size_t* newNodeIndex) {
     IF_ARG_NULL_RETURN(tree);
     IF_ARG_NULL_RETURN(newNodeIndex);
 
@@ -99,6 +101,7 @@ DecisionTreeErrors getNewNode(DecisionTree* tree, size_t* newNodeIndex) {
 
 DecisionTreeErrors addNewNodeToDecisionTree(DecisionTree* tree, const void* value) {
     IF_ARG_NULL_RETURN(tree);
+    IF_ARG_NULL_RETURN(value);
 
     size_t currentNodeInd = tree->root;
     while (currentNodeInd != 0) {
@@ -138,9 +141,11 @@ DecisionTreeErrors addNewNodeToDecisionTree(DecisionTree* tree, const void* valu
     return DECISION_TREE_STATUS_OK;
 }
 
-DecisionTreeErrors dumpDecisionTreeInConsole(const DecisionTree* tree, size_t nodeIndex,
+static DecisionTreeErrors dumpDecisionTreeInConsole(const DecisionTree* tree, size_t nodeIndex,
                                              char** outputBuffer) {
     IF_ARG_NULL_RETURN(tree);
+    IF_ARG_NULL_RETURN(outputBuffer);
+    IF_ARG_NULL_RETURN(*outputBuffer);
 
     // ASK: is strcat faster than sprintf
     if (nodeIndex == 0) {
