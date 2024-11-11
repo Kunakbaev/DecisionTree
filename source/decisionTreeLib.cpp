@@ -145,6 +145,21 @@ static bool doesStringContainBreakChar(const char* word) {
     return false;
 }
 
+static DecisionTreeErrors checkThatObjNotInTree(const DecisionTree* tree, const char* objName) {
+    IF_ARG_NULL_RETURN(tree);
+    IF_ARG_NULL_RETURN(objName);
+
+    for (size_t ind = 1; ind < tree->memBuffSize; ++ind) {
+        const char* const ptr = tree->memBuff[ind].data;
+        LOG_DEBUG_VARS(ptr, objName);
+        if (ptr != NULL && strcmp(ptr, objName) == 0) {
+            return DECISION_TREE_OBJ_ALREADY_EXISTS;
+        }
+    }
+
+    return DECISION_TREE_STATUS_OK;
+}
+
 static DecisionTreeErrors readStringToNodesData(DecisionTree* tree, Node* node) {
     IF_ARG_NULL_RETURN(tree);
     IF_ARG_NULL_RETURN(node);
@@ -158,10 +173,27 @@ static DecisionTreeErrors readStringToNodesData(DecisionTree* tree, Node* node) 
     inputBuff[len - 1] = '\0';
     node->data = (char*)calloc(len, sizeof(char));
     assert(node->data != NULL);
+    IF_ERR_RETURN(checkThatObjNotInTree(tree, inputBuff));
     strcpy(node->data, inputBuff);
 
     IF_NOT_COND_RETURN(!doesStringContainBreakChar(node->data),
                         DECISION_TREE_INVALID_INPUT_STRING);
+}
+
+static DecisionTreeErrors getDecisionTreeNodeByObjName(const DecisionTree* tree, const char* objName, Node* result) {
+    IF_ARG_NULL_RETURN(tree);
+    IF_ARG_NULL_RETURN(objName);
+    IF_ARG_NULL_RETURN(result);
+
+    for (size_t ind = 1; ind < tree->memBuffSize; ++ind) {
+        const char* const ptr = tree->memBuff[ind].data;
+        if (ptr != NULL && strcmp(ptr, objName) == 0) {
+            *result = tree->memBuff[ind];
+            return DECISION_TREE_STATUS_OK;
+        }
+    }
+
+    return DECISION_TREE_OBJ_NOT_FOUND;
 }
 
 static DecisionTreeErrors getNewNodeInitedWithInput(DecisionTree* tree, const char* inputMessage, size_t* newNodeInd) {
@@ -357,22 +389,6 @@ static DecisionTreeErrors printPathArrayFromRootToNode(const DecisionTree* tree,
 //
 //     return DECISION_TREE_STATUS_OK;
 // }
-
-static DecisionTreeErrors getDecisionTreeNodeByObjName(const DecisionTree* tree, const char* objName, Node* result) {
-    IF_ARG_NULL_RETURN(tree);
-    IF_ARG_NULL_RETURN(objName);
-    IF_ARG_NULL_RETURN(result);
-
-    for (size_t ind = 1; ind < tree->memBuffSize; ++ind) {
-        const char* const ptr = tree->memBuff[ind].data;
-        if (ptr != NULL && strcmp(ptr, objName) == 0) {
-            *result = tree->memBuff[ind];
-            return DECISION_TREE_STATUS_OK;
-        }
-    }
-
-    return DECISION_TREE_OBJ_NOT_FOUND;
-}
 
 DecisionTreeErrors printPathToObjByName(const DecisionTree* tree, const char* objName) {
     IF_ARG_NULL_RETURN(tree);
