@@ -19,7 +19,7 @@ endif
 
 # -------------------------   LIB RUN   -----------------------------
 
-SRC 	   		   := $(SOURCE_DIR)/decisionTreeErrors.cpp $(SOURCE_DIR)/decisionTreeLib.cpp $(SOURCE_DIR)/dumper.cpp $(SOURCE_DIR)/main.cpp $(SOURCE_DIR)/decisionTreeComparators.cpp
+SRC 	   		   := $(SOURCE_DIR)/decisionTreeErrors.cpp $(SOURCE_DIR)/decisionTreeLib.cpp $(SOURCE_DIR)/dumper.cpp $(SOURCE_DIR)/main.cpp
 OBJ 	   		   := $(patsubst %.cpp, $(BUILD_DIR)/%.o, $(notdir ${SRC}))
 
 CFLAGS += -I $(LOGGER_EXT_LIB_DIR)/include

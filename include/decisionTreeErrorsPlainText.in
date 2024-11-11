@@ -1,2 +1,5 @@
 ERROR_UNPACK(DECISION_TREE_MEMORY_ALLOCATION_ERROR, 1, "couldn't allocate memory.\n")
-ERROR_UNPACK(DECISION_TREE_INVALID_ARGUMENT,        2, "invalid argument, possibly set to NULL\n")
+ERROR_UNPACK(DECISION_TREE_INVALID_ARGUMENT,        2, "invalid argument, possibly set to NULL.\n")
+ERROR_UNPACK(DECISION_TREE_INVALID_INPUT_STRING,    3, "invalid input string, contains invalid # character.\n")
+ERROR_UNPACK(DECISION_TREE_OBJ_NOT_FOUND,           4, "object doesn't exist in database.\n\n")
+ERROR_UNPACK(DECISION_TREE_OBJ_ALREADY_EXISTS,      5, "object already exists in database.\n\n")

@@ -8,12 +8,14 @@
         DecisionTreeErrors tmp = error;                             \
         if (tmp != DECISION_TREE_STATUS_OK) {                       \
             LOG_ERROR(getDecisionTreeErrorMessage(tmp));            \
+            /* if error occurs in destructor, then we are screwed*/ \
+            destructDecisionTree(&tree);                            \
             assert(tmp != DECISION_TREE_STATUS_OK);                 \
             return tmp;                                             \
         }                                                           \
     } while(0)
 
-DecisionTreeErrors addValueAndDump(DecisionTree* tree, const void* value);
+// DecisionTreeErrors addValueAndDump(DecisionTree* tree, const void* value);
 
 int main() {
     setLoggingLevel(DEBUG);
@@ -22,50 +24,32 @@ int main() {
     dumperConstructor(&dumper, 10, "logs", "png");
     DecisionTree tree = {};
 
-    IF_MAIN_ERR_RETURN(constructDecisionTree(&tree, &dumper, cmpNumbersLessEqual, "%d"));
+    IF_MAIN_ERR_RETURN(constructDecisionTree(&tree, &dumper));
 
-    // IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)"aba"));
-    // IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)"hubabuba"));
-    // IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)"abacaba"));
-    // IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)"giraffe"));
-    // IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)"bababoi"));
-    // IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)"zebra"));
-    // IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)"abba"));
-    // IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)"baba"));
-    // IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)"yamate"));
-    // IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)"kudasai"));
-    // IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)"yamayka wins"));
-    // IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)"zebroid"));
+    IF_MAIN_ERR_RETURN(tryToGuessObject(&tree));
+    IF_MAIN_ERR_RETURN(dumpDecisionTree(&tree));
 
-    IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)50));
-    IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)30));
-    IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)10));
-    IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)70));
-    IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)65));
-    IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)80));
-    IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)90));
-    IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)70));
-    IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)65));
-    IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)80));
-    IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)90));
-    IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)70));
-    IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)65));
-    IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)80));
-    IF_MAIN_ERR_RETURN(addValueAndDump(&tree, (void*)90));
+    IF_MAIN_ERR_RETURN(tryToGuessObject(&tree));
+    IF_MAIN_ERR_RETURN(dumpDecisionTree(&tree));
+
+    IF_MAIN_ERR_RETURN(tryToGuessObject(&tree));
+    IF_MAIN_ERR_RETURN(dumpDecisionTree(&tree));
+
+    IF_MAIN_ERR_RETURN(printPathToObjByName(&tree, "hui"));
 
     destructDecisionTree(&tree);
 
     return 0;
 }
 
-DecisionTreeErrors addValueAndDump(DecisionTree* tree, const void* value) {
-    if (tree == NULL) {
-        LOG_ERROR(getDecisionTreeErrorMessage(DECISION_TREE_INVALID_ARGUMENT));
-        return DECISION_TREE_INVALID_ARGUMENT;
-    }
-
-    IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(tree, (void*)value));
-    IF_MAIN_ERR_RETURN(dumpDecisionTree(tree));
-
-    return DECISION_TREE_STATUS_OK;
-}
+// DecisionTreeErrors addValueAndDump(DecisionTree* tree, const void* value) {
+//     if (tree == NULL) {
+//         LOG_ERROR(getDecisionTreeErrorMessage(DECISION_TREE_INVALID_ARGUMENT));
+//         return DECISION_TREE_INVALID_ARGUMENT;
+//     }
+//
+//     IF_MAIN_ERR_RETURN(addNewNodeToDecisionTree(tree, (void*)value));
+//     IF_MAIN_ERR_RETURN(dumpDecisionTree(tree));
+//
+//     return DECISION_TREE_STATUS_OK;
+// }

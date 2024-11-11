@@ -1,9 +1,0 @@
-CMP(cmpNumbersLess,        (int64_t)a < (int64_t)b)
-CMP(cmpNumbersLessEqual,   (int64_t)a <= (int64_t)b)
-CMP(cmpNumbersBigger,      (int64_t)a > (int64_t)b)
-CMP(cmpNumbersBiggerEqual, (int64_t)a >= (int64_t)b)
-CMP(cmpStringsLess,        strcmp((const char*)a, (const char*)b) < 0)
-CMP(cmpStringsLessEqual,   strcmp((const char*)a, (const char*)b) <= 0)
-CMP(cmpStringsBigger,      strcmp((const char*)a, (const char*)b) > 0)
-CMP(cmpStringsBiggerEqual, strcmp((const char*)a, (const char*)b) >= 0)
-
