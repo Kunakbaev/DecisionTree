@@ -24,6 +24,7 @@ DecisionTreeErrors constructDecisionTree(DecisionTree* tree, Dumper* dumper);
 DecisionTreeErrors printPathToObjByName(const DecisionTree* tree, const char* objName);
 //DecisionTreeErrors getPathToDecisionTreeNode(const DecisionTree* tree, const Node* node, size_t** path);
 DecisionTreeErrors tryToGuessObject(DecisionTree* tree);
+DecisionTreeErrors readDecisionTreeFromFile(DecisionTree* tree, const char* fileName);
 DecisionTreeErrors dumpDecisionTree(DecisionTree* tree);
 DecisionTreeErrors destructDecisionTree(DecisionTree* tree);
 

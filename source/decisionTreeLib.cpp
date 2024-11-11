@@ -64,10 +64,13 @@ static DecisionTreeErrors resizeMemBuffer(DecisionTree* tree, size_t newSize) {
         memset(tree->memBuff + newSize, 0, deltaBytes);
     }
 
+    LOG_DEBUG_VARS(oldSize, deltaSize, deltaBytes);
     Node* tmp = (Node*)realloc(tree->memBuff, newSize * sizeof(Node));
     IF_NOT_COND_RETURN(tmp != NULL, DECISION_TREE_MEMORY_ALLOCATION_ERROR);
     tree->memBuff     = tmp;
     tree->memBuffSize = newSize;
+
+    LOG_DEBUG_VARS(tmp);
 
     if (oldSize < newSize) {
         memset(tree->memBuff + oldSize, 0, deltaBytes - 1);
@@ -78,6 +81,7 @@ static DecisionTreeErrors resizeMemBuffer(DecisionTree* tree, size_t newSize) {
         tree->memBuff[nodeInd].memBuffIndex = nodeInd;
     }
 
+    LOG_DEBUG_VARS("bruh");
     return DECISION_TREE_STATUS_OK;
 }
 
@@ -91,6 +95,7 @@ static DecisionTreeErrors getNewNode(DecisionTree* tree, size_t* newNodeIndex) {
     assert(tree->freeNodeIndex < tree->memBuffSize);
 
     *newNodeIndex = ++tree->freeNodeIndex;
+    LOG_DEBUG_VARS(*newNodeIndex, tree->memBuffSize);
     LOG_DEBUG_VARS(newNodeIndex, tree->memBuff[*newNodeIndex].memBuffIndex);
 
     return DECISION_TREE_STATUS_OK;
@@ -151,7 +156,7 @@ static DecisionTreeErrors checkThatObjNotInTree(const DecisionTree* tree, const 
 
     for (size_t ind = 1; ind < tree->memBuffSize; ++ind) {
         const char* const ptr = tree->memBuff[ind].data;
-        LOG_DEBUG_VARS(ptr, objName);
+        // LOG_DEBUG_VARS(ptr, objName);
         if (ptr != NULL && strcmp(ptr, objName) == 0) {
             return DECISION_TREE_OBJ_ALREADY_EXISTS;
         }
@@ -419,6 +424,103 @@ DecisionTreeErrors printPathToObjByName(const DecisionTree* tree, const char* ob
 
 
 
+static const char* trimBeginningOfLine(const char* line) {
+    assert(line != NULL);
+    const char* ptr = line;
+    // TODO: add delims const string
+    while (*ptr == '\t' || *ptr == ' ')
+        ++ptr;
+
+    return ptr;
+}
+
+// DecisionTreeErrors buildTreeBasedOnParents(DecisionTree* tree) {
+//     IF_ARG_NULL_RETURN(tree);
+//
+//     for (size_t nodeInd = 1; nodeInd < tree->memBuffSize; ++nodeInd) {
+//         Node node = tree->memBuff[nodeInd];
+//         if (node.parent != 0) {
+//             assert(node.parent < tree->memBuffSize);
+//             Node* parent = &tree->memBuff[node.parent];
+//             if (parent->left == node.memBuffIndex) {
+//                 parent->left = node.memBuffIndex;
+//             }
+//         }
+//     }
+//
+//     return DECISION_TREE_STATUS_OK;
+// }
+
+DecisionTreeErrors readDecisionTreeFromFile(DecisionTree* tree, const char* fileName) {
+    IF_ARG_NULL_RETURN(tree);
+    IF_ARG_NULL_RETURN(fileName);
+
+    FILE* file = fopen(fileName, "r");
+    IF_NOT_COND_RETURN(file != NULL, DECISION_TREE_FILE_OPENING_ERROR);
+
+    const size_t LINE_BUFF_SIZE = 200;
+    char lineBuffer[LINE_BUFF_SIZE];
+
+    Node*  node = NULL;
+    size_t preInd = 0;
+    LOG_DEBUG_VARS("ok");
+    while (fgets(lineBuffer, LINE_BUFF_SIZE, file) != NULL) {
+        char* tmp = (char*)trimBeginningOfLine(lineBuffer);
+        size_t len = strlen(tmp);
+        assert(len >= 1);
+        tmp[len - 1] = '\0';
+        LOG_DEBUG_VARS(lineBuffer, tmp);
+
+        if (strcmp(tmp, "{") == 0) {
+            LOG_DEBUG("entry in subtree");
+            preInd = node == NULL ? 0 : node->memBuffIndex;
+            continue;
+        }
+        if (strcmp(tmp, "}") == 0) {
+            LOG_DEBUG("leaving subtree");
+            assert(node != NULL);
+            assert(node->parent < tree->memBuffSize);
+            node = &tree->memBuff[node->parent];
+            continue;
+        }
+
+        LOG_DEBUG("creating new node");
+        LOG_DEBUG_VARS(len);
+
+        size_t newNodeIndex = 0;
+        getNewNode(tree, &newNodeIndex);
+        node = &tree->memBuff[newNodeIndex];
+
+        node->data = (char*)calloc(len, sizeof(char));
+        assert(node->data != NULL);
+        IF_ERR_RETURN(checkThatObjNotInTree(tree, tmp));
+        strcpy(node->data, tmp);
+
+        if (tree->root == 0)
+            tree->root = node->memBuffIndex;
+        if (preInd != 0) {
+            node->parent = preInd;
+            assert(preInd < tree->memBuffSize);
+            Node* pre = &tree->memBuff[preInd];
+
+            if (pre->left == 0) {
+                pre->left = node->memBuffIndex;
+            } else {
+                pre->right = node->memBuffIndex;
+            }
+            LOG_DEBUG_VARS(pre->memBuffIndex);
+        }
+
+        IF_NOT_COND_RETURN(!doesStringContainBreakChar(node->data),
+                            DECISION_TREE_INVALID_INPUT_STRING);
+
+
+    }
+
+    // IF_ERR_RETURN(buildTreeBasedOnParents(tree));
+
+    return DECISION_TREE_STATUS_OK;
+}
 
 
 
@@ -469,8 +571,14 @@ DecisionTreeErrors dumpDecisionTree(DecisionTree* tree) {
     IF_NOT_COND_RETURN(outputBuffer != NULL,
                        DECISION_TREE_MEMORY_ALLOCATION_ERROR);
 
-    for (size_t nodeInd = 0; nodeInd < 5; ++nodeInd)
-        LOG_DEBUG_VARS(nodeInd, tree->memBuff[nodeInd].data, tree->memBuff[nodeInd].parent);
+    for (size_t nodeInd = 0; nodeInd < 5; ++nodeInd) {
+        Node node = tree->memBuff[nodeInd];
+        const char* data = node.data;
+        size_t parent = node.parent;
+        size_t left = node.left;
+        size_t right = node.right;
+        LOG_DEBUG_VARS(nodeInd, data, parent, left, right);
+    }
 
     char* targetPtr = outputBuffer;
     IF_ERR_RETURN(dumpDecisionTreeInConsole(tree, tree->root, &targetPtr));

@@ -26,16 +26,19 @@ int main() {
 
     IF_MAIN_ERR_RETURN(constructDecisionTree(&tree, &dumper));
 
-    IF_MAIN_ERR_RETURN(tryToGuessObject(&tree));
+    IF_MAIN_ERR_RETURN(readDecisionTreeFromFile(&tree, "fruitsAndVegetablesDB.txt"));
     IF_MAIN_ERR_RETURN(dumpDecisionTree(&tree));
 
-    IF_MAIN_ERR_RETURN(tryToGuessObject(&tree));
-    IF_MAIN_ERR_RETURN(dumpDecisionTree(&tree));
-
-    IF_MAIN_ERR_RETURN(tryToGuessObject(&tree));
-    IF_MAIN_ERR_RETURN(dumpDecisionTree(&tree));
-
-    IF_MAIN_ERR_RETURN(printPathToObjByName(&tree, "hui"));
+//     IF_MAIN_ERR_RETURN(tryToGuessObject(&tree));
+//     IF_MAIN_ERR_RETURN(dumpDecisionTree(&tree));
+//
+//     IF_MAIN_ERR_RETURN(tryToGuessObject(&tree));
+//     IF_MAIN_ERR_RETURN(dumpDecisionTree(&tree));
+//
+//     IF_MAIN_ERR_RETURN(tryToGuessObject(&tree));
+//     IF_MAIN_ERR_RETURN(dumpDecisionTree(&tree));
+//
+//     IF_MAIN_ERR_RETURN(printPathToObjByName(&tree, "hui"));
 
     destructDecisionTree(&tree);
 

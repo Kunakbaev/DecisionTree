@@ -16,8 +16,8 @@
 
 const size_t FILE_NAME_BUFFER_SIZE      = 100;
 const size_t FULL_FILE_NAME_BUFFER_SIZE = 200;
-const size_t BUFFER_SIZE                = 1 << 13;
-const size_t TMP_BUFFER_SIZE            = 1 << 10;
+const size_t BUFFER_SIZE                = 1 << 15;
+const size_t TMP_BUFFER_SIZE            = 1 << 13;
 const size_t FORMAT_SPEC_LEN            = 5;
 const size_t COLOR_LEN                  = 10;
 
