@@ -142,6 +142,10 @@ static DumperErrors addNodeDumpStructToBuffer(Dumper* dumper, const char* format
     assert(formatLen <= FORMAT_SPEC_LEN);
     memcpy(formatSpec, formatForNodeData, strlen(formatForNodeData));
     // ASK: how to specify format?
+
+    // char  format_string[100] = "Hello %s"; // "%s"
+    // snprintf(format_string, 100, format_string, formatSpec); // Будет Варнинг!
+
     if (node != NULL) {
         snprintf(tmpBuffer, TMP_BUFFER_SIZE,
         "iamnode_id_%zu [shape=none, margin=0, fontcolor=white, color=%s, label=< \n"

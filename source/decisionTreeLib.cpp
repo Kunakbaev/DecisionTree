@@ -161,6 +161,7 @@ static DecisionTreeErrors dumpDecisionTreeInConsole(const DecisionTree* tree, si
     assert(nodeIndex < tree->memBuffSize);
     Node node = tree->memBuff[nodeIndex];
     IF_ERR_RETURN(dumpDecisionTreeInConsole(tree, node.left, outputBuffer));
+    // FIXME: add a var for left space in buffer
     (*outputBuffer) += snprintf(*outputBuffer, OUTPUT_BUFFER_SIZE, " %d ", node.data);
 
     IF_ERR_RETURN(dumpDecisionTreeInConsole(tree, node.right, outputBuffer));
