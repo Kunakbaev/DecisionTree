@@ -1,0 +1,7 @@
+CMD("--help",           terminalCmdHelp)
+CMD("show",             openImageOfCurrentStateDecisionTree)
+CMD("guess",            tryToGuessObject)
+CMD("read",             terminalCmdReadFromFile)
+CMD("definition",       terminalCmdPrintDefinition)
+CMD("same",             terminalCmdShowCommonOf2Objects)
+CMD("diff",             terminalCmdShowDifferenceOf2Objects)

@@ -16,6 +16,9 @@
 #define IF_NOT_COND_RETURN(condition, error) \
     COMMON_IF_NOT_COND_RETURN(condition, error, getDecisionTreeErrorMessage)\
 
+#define DUMPER_ERR_CHECK(error) \
+    COMMON_IF_SUBMODULE_ERR_RETURN(error, getDumperErrorMessage, DUMPER_STATUS_OK, DECISION_TREE_DUMPER_ERROR);
+
 const size_t MIN_MEM_BUFF_SIZE  = 8;
 const size_t OUTPUT_BUFFER_SIZE = 1 << 9;
 const size_t MAX_OBJ_NAME_LEN   = 30;
@@ -329,9 +332,9 @@ static size_t getNodesDepth(const DecisionTree* tree, const Node* start) {
     while (currentNodeInd != 0) {
         ++depth;
         assert(currentNodeInd < tree->memBuffSize);
-        LOG_DEBUG_VARS(depth, currentNodeInd, tree->memBuff[currentNodeInd].parent);
+        //LOG_DEBUG_VARS(depth, currentNodeInd, tree->memBuff[currentNodeInd].parent);
         currentNodeInd = tree->memBuff[currentNodeInd].parent;
-        LOG_DEBUG_VARS(currentNodeInd);
+        //LOG_DEBUG_VARS(currentNodeInd);
     }
 
     return depth;
@@ -357,7 +360,9 @@ static DecisionTreeErrors fillPathArrayFromRootToNode(const DecisionTree* tree, 
     return DECISION_TREE_STATUS_OK;
 }
 
-static DecisionTreeErrors printPathArrayFromRootToNode(const DecisionTree* tree, size_t pathLen, size_t* path) {
+static DecisionTreeErrors printPathArrayFromRootToNode(const DecisionTree* tree,
+                                                       size_t pathLen, size_t* path,
+                                                       bool isLastIncluded) {
     IF_ARG_NULL_RETURN(tree);
     IF_ARG_NULL_RETURN(path);
 
@@ -372,6 +377,9 @@ static DecisionTreeErrors printPathArrayFromRootToNode(const DecisionTree* tree,
             strncat(ptr, tmpWord, OUTPUT_BUFFER_SIZE - (ptr - output));
             ptr += strlen(tmpWord);
         }
+
+        if (!isLastIncluded && elemInd == pathLen - 1)
+            break;
         ptr += snprintf(ptr, OUTPUT_BUFFER_SIZE - (ptr - output), "%s||", tree->memBuff[nodeInd].data);
         prev = nodeInd;
     }
@@ -436,7 +444,7 @@ DecisionTreeErrors printPathToObjByName(const DecisionTree* tree, const char* ob
     IF_ERR_RETURN(getPathToObjByName(tree, objName, &pathLen, &path));
 
     LOG_DEBUG_VARS("biba");
-    IF_ERR_RETURN(printPathArrayFromRootToNode(tree, pathLen, path));
+    IF_ERR_RETURN(printPathArrayFromRootToNode(tree, pathLen, path, true));
     FREE(path);
 
     return DECISION_TREE_STATUS_OK;
@@ -533,6 +541,7 @@ DecisionTreeErrors readDecisionTreeFromFile(DecisionTree* tree, const char* file
     FILE* file = fopen(fileName, "r");
     IF_NOT_COND_RETURN(file != NULL, DECISION_TREE_FILE_OPENING_ERROR);
 
+    tree->root = 0;
     const size_t LINE_BUFF_SIZE = 200;
     char lineBuffer[LINE_BUFF_SIZE];
 
@@ -588,7 +597,7 @@ static DecisionTreeErrors dumpDecisionTreeInConsole(const DecisionTree* tree, si
     strncat(*outputBuffer, "(", OUTPUT_BUFFER_SIZE);
     ++(*outputBuffer);
 
-    LOG_DEBUG_VARS(nodeIndex, tree->memBuffSize);
+    //LOG_DEBUG_VARS(nodeIndex, tree->memBuffSize);
     assert(nodeIndex < tree->memBuffSize);
     Node node = tree->memBuff[nodeIndex];
     IF_ERR_RETURN(dumpDecisionTreeInConsole(tree, node.left, outputBuffer));
@@ -621,6 +630,7 @@ DecisionTreeErrors dumpDecisionTree(DecisionTree* tree) {
         size_t left = node.left;
         size_t right = node.right;
         LOG_DEBUG_VARS(nodeInd, data, parent, left, right);
+        DEBUG_VARS_TO_DUMPER_ALL_LOGS_FILE((Dumper*)&tree->dumper, nodeInd, data, parent, left, right);
     }
 
     char* targetPtr = outputBuffer;
@@ -630,27 +640,42 @@ DecisionTreeErrors dumpDecisionTree(DecisionTree* tree) {
     FREE(outputBuffer);
 
     // FIXME: add dumper err check
-    dumperDumpDecisionTree(&tree->dumper, tree, tree->freeNodeIndex);
+    DUMPER_ERR_CHECK(dumperDumpDecisionTree(&tree->dumper, tree, tree->freeNodeIndex));
 
     return DECISION_TREE_STATUS_OK;
 }
 
+DecisionTreeErrors openImageOfCurrentStateDecisionTree(DecisionTree* tree) {
+    IF_ARG_NULL_RETURN(tree);
+
+    // first we need to create image of current state of tree
+    IF_ERR_RETURN(dumpDecisionTree(tree));
+
+    // FIXME: be carefull with nasty commands
+    const char* fileName = getLastImageFileName((Dumper*)&tree->dumper);
+    const size_t TMP_LEN = 100;
+    char tmp[TMP_LEN] = {};
+    snprintf(tmp, TMP_LEN, "xdg-open %s", fileName);
+    system(tmp);
+
+    return DECISION_TREE_STATUS_OK;
+}
 
 DecisionTreeErrors dumpCommonPathOf2Objects(DecisionTree* tree, const char* objName1, const char* objName2) {
     IF_ARG_NULL_RETURN(tree);
     IF_ARG_NULL_RETURN(objName1);
     IF_ARG_NULL_RETURN(objName2);
 
-    size_t* path1   = NULL;
+    size_t*   path1 = NULL;
     size_t pathLen1 = 0;
     IF_ERR_RETURN(getPathToObjByName(tree, objName1, &pathLen1, &path1));
 
-    size_t* path2   = NULL;
+    size_t*   path2 = NULL;
     size_t pathLen2 = 0;
     IF_ERR_RETURN(getPathToObjByName(tree, objName2, &pathLen2, &path2));
 
     // FIXME: add dumper err check
-    dumperDumpDecisionTreeDrawCommonPathes(&tree->dumper, tree, pathLen1, path1, pathLen2, path2);
+    DUMPER_ERR_CHECK(dumperDumpDecisionTreeDrawCommonPathes(&tree->dumper, tree, pathLen1, path1, pathLen2, path2));
 
     FREE(path1);
     FREE(path2);
@@ -675,3 +700,192 @@ DecisionTreeErrors destructDecisionTree(DecisionTree* tree) {
 
     return DECISION_TREE_STATUS_OK;
 }
+
+
+
+
+
+
+
+
+
+const char* TERMINAL_HELP_MESSAGE =
+"help message\n"
+"--help shows this message\n"
+"openTreeImgState opens image of current state of decision tree\n"
+"guess asks questions and tries to guess object, if not found, adds object to the tree\n"
+"definition prints definition of an object with a given name\n"
+;
+
+const char* QUIT_COMMAND = "quit";
+
+DecisionTreeErrors terminalCmdHelp(DecisionTree* tree) {
+    IF_ARG_NULL_RETURN(tree);
+
+    printf("%s\n", TERMINAL_HELP_MESSAGE);
+
+    return DECISION_TREE_STATUS_OK;
+}
+
+const size_t BUFFER_SIZE = 100;
+
+char* printInputMessageAndReadString(const char* inputMessage) {
+    assert(inputMessage != NULL);
+    printf("%s", inputMessage);
+
+    char* buffer = (char*)calloc(BUFFER_SIZE, sizeof(char));
+    assert(buffer != NULL);
+    fgets(buffer, BUFFER_SIZE, stdin);
+    size_t len = strlen(buffer);
+    assert(len >= 1);
+    buffer[len - 1] = '\0';
+    LOG_DEBUG_VARS(buffer);
+
+    return buffer;
+}
+
+DecisionTreeErrors terminalCmdPrintDefinition(DecisionTree* tree) {
+    IF_ARG_NULL_RETURN(tree);
+
+    // TODO: remove copypaste
+    char* buffer = printInputMessageAndReadString("print object name: ");
+    IF_ERR_RETURN(printPathToObjByName(tree, buffer));
+    FREE(buffer);
+
+    return DECISION_TREE_STATUS_OK;
+}
+
+DecisionTreeErrors terminalCmdReadFromFile(DecisionTree* tree) {
+    IF_ARG_NULL_RETURN(tree);
+
+    // TODO: remove copypaste
+    char* buffer = printInputMessageAndReadString("print file name: ");
+    IF_ERR_RETURN(readDecisionTreeFromFile(tree, buffer));
+    FREE(buffer);
+
+    return DECISION_TREE_STATUS_OK;
+}
+
+DecisionTreeErrors commonOrDifferenceHelperFunc(DecisionTree* tree, bool isShowSame) {
+    IF_ARG_NULL_RETURN(tree);
+
+    // TODO: remove copypaste
+    char* objName1 = printInputMessageAndReadString("name of object_1: ");
+    char* objName2 = printInputMessageAndReadString("name of object_2: ");
+    assert(objName1 != NULL);
+    assert(objName2 != NULL);
+
+    // check if names are different
+
+    size_t*   path1 = NULL;
+    size_t pathLen1 = 0;
+    IF_ERR_RETURN(getPathToObjByName(tree, objName1, &pathLen1, &path1));
+
+    size_t*   path2 = NULL;
+    size_t pathLen2 = 0;
+    IF_ERR_RETURN(getPathToObjByName(tree, objName2, &pathLen2, &path2));
+
+    size_t* cntArr = (size_t*)calloc(tree->memBuffSize, sizeof(size_t));
+    IF_NOT_COND_RETURN(cntArr != NULL,
+                       DECISION_TREE_MEMORY_ALLOCATION_ERROR);
+    size_t* commonPath = (size_t*)calloc(pathLen1, sizeof(size_t));
+    IF_NOT_COND_RETURN(commonPath != NULL,
+                       DECISION_TREE_MEMORY_ALLOCATION_ERROR);
+
+    for (int i = 0; i < pathLen1; ++i) {
+        ++cntArr[path1[i]];
+        LOG_DEBUG_VARS(i, path1[i]);
+    }
+    for (int i = 0; i < pathLen2; ++i) {
+        ++cntArr[path2[i]];
+        LOG_DEBUG_VARS(i, path2[i]);
+    }
+
+    size_t commonPathLen = 0;
+    for (int i = 0; i + 1 < pathLen2; ++i) {
+        if (cntArr[path2[i + 1]] != 2) {
+            commonPath[commonPathLen] = path2[i];
+            ++commonPathLen;
+            break;
+        }
+        if (!isShowSame) continue;
+
+        LOG_DEBUG_VARS(i, path2[i], path1[i]);
+        commonPath[commonPathLen] = path2[i];
+        ++commonPathLen;
+    }
+    LOG_DEBUG_VARS(objName1, objName2, commonPathLen);
+
+    IF_ERR_RETURN(printPathArrayFromRootToNode(tree, commonPathLen, commonPath, !isShowSame));
+
+    FREE(objName1);
+    FREE(objName2);
+
+    return DECISION_TREE_STATUS_OK;
+}
+
+DecisionTreeErrors terminalCmdShowCommonOf2Objects(DecisionTree* tree) {
+    IF_ERR_RETURN(commonOrDifferenceHelperFunc(tree, true));
+}
+
+DecisionTreeErrors terminalCmdShowDifferenceOf2Objects(DecisionTree* tree) {
+    IF_ERR_RETURN(commonOrDifferenceHelperFunc(tree, false));
+}
+
+typedef DecisionTreeErrors (*terminalCmdFuncPtr)(DecisionTree* tree);
+
+struct TerminalCmd {
+    const char*        cmdName;
+    terminalCmdFuncPtr funcPtr;
+};
+
+#define CMD(commandName, commandFuncPtr) \
+    {commandName, commandFuncPtr},
+
+TerminalCmd arrayOfCommands[] = {
+    #include "../include/plainTextTerminalCommandsForDecisionTree.in"
+};
+
+size_t NUM_OF_COMMANDS = sizeof(arrayOfCommands) / sizeof(*arrayOfCommands);
+
+DecisionTreeErrors executeCommand(DecisionTree* tree, const char* commandName, bool* isQuit) {
+    IF_ARG_NULL_RETURN(tree);
+    IF_ARG_NULL_RETURN(commandName);
+
+    if (strcmp(commandName, QUIT_COMMAND) == 0) {
+        *isQuit = true;
+        return DECISION_TREE_STATUS_OK;
+    }
+
+    for (size_t commandInd = 0; commandInd < NUM_OF_COMMANDS; ++commandInd) {
+        TerminalCmd command = arrayOfCommands[commandInd];
+        if (strcmp(command.cmdName, commandName) == 0) {
+            IF_ERR_RETURN((*command.funcPtr)(tree));
+        }
+    }
+
+    return DECISION_TREE_STATUS_OK;
+}
+
+DecisionTreeErrors mainProgramWhileTrue(DecisionTree* tree) {
+    IF_ARG_NULL_RETURN(tree);
+
+    bool isQuit = false;
+    char* buffer = NULL;
+    while (!isQuit) {
+        buffer = printInputMessageAndReadString("Print your command: ");
+        executeCommand(tree, buffer, &isQuit);
+    }
+
+    return DECISION_TREE_STATUS_OK;
+}
+
+
+
+
+
+
+
+
+
+

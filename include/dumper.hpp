@@ -26,6 +26,7 @@ DumperErrors dumperDumpDecisionTreeDrawCommonPathes(Dumper* dumper, const Decisi
                                     size_t pathLen2, size_t* path2);
 DumperErrors dumperDumpDecisionTree(Dumper* dumper, const DecisionTree* tree,
                                     size_t highlightedNodeInd);
+char* getLastImageFileName(const Dumper* dumper);
 DumperErrors dumperDestructor(Dumper* dumper);
 
 const char* getDumperErrorMessage(DumperErrors error);

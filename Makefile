@@ -4,6 +4,8 @@ LOGGER_FLAGS :=
 # CFLAGS = -D _DEBUG
 # CFLAGS += -D NDEBUG
 CFLAGS += -fsanitize=address
+# LIB_PATH := /usr/lib/x86_64-linux-gnu/libespeak-ng.so.1
+LIB_PATH := /usr/lib/x86_64-linux-gnu/espeak-ng-data
 
 MY_LOG_LIB_NAME    := my_loglib
 SOURCE_DIR         := source
@@ -25,10 +27,10 @@ OBJ 	   		   := $(patsubst %.cpp, $(BUILD_DIR)/%.o, $(notdir ${SRC}))
 CFLAGS += -I $(LOGGER_EXT_LIB_DIR)/include
 
 $(LIB_RUN_NAME): $(OBJ)
-	$(CC) $^ -o $(BUILD_DIR)/$(LIB_RUN_NAME) -l$(MY_LOG_LIB_NAME) $(CFLAGS)
+	$(CC) $^ -o $(BUILD_DIR)/$(LIB_RUN_NAME) -L $(LIB_PATH) -l$(MY_LOG_LIB_NAME) $(CFLAGS)
 
 $(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp $(BUILD_DIR)
-	$(CC) -c $< $(CFLAGS) -o $@ $(ASSERT_DEFINE)
+	$(CC) -c $< $(CFLAGS) -o $@ $(ASSERT_DEFINE) -L $(LIB_PATH)
 
 run: $(LIB_RUN_NAME)
 	./building/$(LIB_RUN_NAME)

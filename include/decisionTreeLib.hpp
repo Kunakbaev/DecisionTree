@@ -27,7 +27,10 @@ DecisionTreeErrors tryToGuessObject(DecisionTree* tree);
 DecisionTreeErrors readDecisionTreeFromFile(DecisionTree* tree, const char* fileName);
 DecisionTreeErrors saveDecisionTreeToFile(DecisionTree* tree, const char* fileName);
 DecisionTreeErrors dumpDecisionTree(DecisionTree* tree);
+DecisionTreeErrors openImageOfCurrentStateDecisionTree(DecisionTree* tree);
 DecisionTreeErrors dumpCommonPathOf2Objects(DecisionTree* tree, const char* objName1, const char* objName2);
 DecisionTreeErrors destructDecisionTree(DecisionTree* tree);
+
+DecisionTreeErrors mainProgramWhileTrue(DecisionTree* tree);
 
 #endif

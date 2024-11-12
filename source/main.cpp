@@ -1,4 +1,6 @@
 #include <iostream>
+//#include <espeak/speak_lib.h>
+
 #include "logLib.hpp"
 #include "../include/decisionTreeLib.hpp"
 #include "../include/dumper.hpp"
@@ -26,12 +28,19 @@ int main() {
 
     IF_MAIN_ERR_RETURN(constructDecisionTree(&tree, &dumper));
 
+    // IF_MAIN_ERR_RETURN(readDecisionTreeFromFile(&tree, "fruitsAndVegetablesDB.txt"));
+    // IF_MAIN_ERR_RETURN(openImageOfCurrentStateDecisionTree(&tree));
+    IF_MAIN_ERR_RETURN(mainProgramWhileTrue(&tree));
+
+    exit(0);
+
     IF_MAIN_ERR_RETURN(readDecisionTreeFromFile(&tree, "fruitsAndVegetablesDB.txt"));
     IF_MAIN_ERR_RETURN(dumpDecisionTree(&tree));
     IF_MAIN_ERR_RETURN(printPathToObjByName(&tree, "grape"));
     IF_MAIN_ERR_RETURN(printPathToObjByName(&tree, "nektarin"));
     IF_MAIN_ERR_RETURN(dumpCommonPathOf2Objects(&tree, "grape", "kivi"));
     IF_MAIN_ERR_RETURN(dumpCommonPathOf2Objects(&tree, "watermelon", "potato"));
+    IF_MAIN_ERR_RETURN(openImageOfCurrentStateDecisionTree(&tree));
 
     destructDecisionTree(&tree);
 

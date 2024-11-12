@@ -201,7 +201,7 @@ DumperErrors dumperDumpSingleTreeNode(Dumper* dumper, const Node* node, size_t h
     getNodesColorNormal(node, highlightedNodeInd, &color);
     IF_ERR_RETURN(addNodeDumpStructToBuffer(dumper, node, color));
     FREE(color);
-    strcat(buffer, "}\n");
+    strncat(buffer, "}\n", BUFFER_SIZE);
     fprintf(outputFile, buffer);
     fclose(outputFile);
 
@@ -236,7 +236,7 @@ static DumperErrors getNodesColorForCommonPathFunc(const Node* node, size_t cntO
     const char* redColor   = "red";
 
     // TODO: maybe pass as parameter how many last nodes should be highlighted
-    LOG_DEBUG_VARS(cntOccur);
+    //LOG_DEBUG_VARS(cntOccur);
     if (cntOccur == 0)
         memcpy(*result, whiteColor, strlen(whiteColor));
     if (cntOccur == 1)
@@ -273,7 +273,7 @@ size_t pathLen2, size_t* path2) {
 
     char* color = NULL;
     getNodesColorForCommonPathFunc(&node, cntOccur, &color);
-    LOG_DEBUG_VARS(nodeInd, cntOccur, color);
+    //LOG_DEBUG_VARS(nodeInd, cntOccur, color);
     IF_ERR_RETURN(addNodeDumpStructToBuffer(dumper, &node, color));
     FREE(color);
 
@@ -313,7 +313,6 @@ static DumperErrors drawDecisionTreeRecursively(Dumper* dumper, const DecisionTr
     assert(nodeInd < tree->memBuffSize);
     Node node = tree->memBuff[nodeInd];
 
-
     char* color = NULL;
     getNodesColorNormal(&node, highlightedNodeInd, &color);
     IF_ERR_RETURN(addNodeDumpStructToBuffer(dumper, &node, color));
@@ -342,6 +341,19 @@ static DumperErrors drawDecisionTreeRecursively(Dumper* dumper, const DecisionTr
     IF_ERR_RETURN(drawDecisionTreeRecursively(dumper, tree, node.right, nodeInd, highlightedNodeInd));
 
     return DUMPER_STATUS_OK;
+}
+
+char* getLastImageFileName(const Dumper* dumper) {
+    assert(dumper != NULL);
+
+    memset(fileNameBuffer, 0, FILE_NAME_BUFFER_SIZE);
+    snprintf(fileNameBuffer, FILE_NAME_BUFFER_SIZE,
+            "%zu_list.%s", dumper->numberOfLogsBefore, dumper->outputFileFormat);
+    LOG_DEBUG_VARS(fileNameBuffer);
+
+    snprintf(tmpBuffer, TMP_BUFFER_SIZE,
+             "%s/images/%s", dumper->dirForLogsPath, fileNameBuffer);
+    return tmpBuffer;
 }
 
 DumperErrors dumperDumpDecisionTree(Dumper* dumper, const DecisionTree* tree,
@@ -381,16 +393,13 @@ DumperErrors dumperDumpDecisionTree(Dumper* dumper, const DecisionTree* tree,
     fprintf(outputFile, buffer);
     fclose(outputFile);
 
-    memset(fileNameBuffer, 0, FILE_NAME_BUFFER_SIZE);
-    snprintf(fileNameBuffer, FILE_NAME_BUFFER_SIZE,
-            "%zu_list.%s", dumper->numberOfLogsBefore, dumper->outputFileFormat);
-    LOG_DEBUG_VARS(fileNameBuffer);
+    tmpBuffer = getLastImageFileName(dumper);
 
     // TODO: put assert for ;
     memset(fileFullNameBuffer, 0, FILE_NAME_BUFFER_SIZE);
     snprintf(fileFullNameBuffer, FULL_FILE_NAME_BUFFER_SIZE,
-             "dot -Tpng logs/dots/%zu_list.dot -o %s/images/%s",
-            dumper->numberOfLogsBefore, dumper->dirForLogsPath, fileNameBuffer);
+             "dot -Tpng logs/dots/%zu_list.dot -o %s",
+             dumper->numberOfLogsBefore, tmpBuffer);
     LOG_DEBUG_VARS(fileFullNameBuffer);
     // WARNING: some nasty command can be substituted
     system(fileFullNameBuffer);
