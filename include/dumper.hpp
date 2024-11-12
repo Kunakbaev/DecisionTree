@@ -21,6 +21,9 @@ DumperErrors dumperConstructor(Dumper* dumper,
 void dumperAddDebugInfoToAllLogsFile(Dumper* dumper, const char* debugInfo);
 void dumperAddImgToAllLogsFile(Dumper* dumper, const char* imagePath);
 DumperErrors dumperDumpSingleTreeNode(Dumper* dumper, const Node* node, size_t highlightedNodeInd, const char* formatForNodeData);
+DumperErrors dumperDumpDecisionTreeDrawCommonPathes(Dumper* dumper, const DecisionTree* tree,
+                                    size_t pathLen1, size_t* path1,
+                                    size_t pathLen2, size_t* path2);
 DumperErrors dumperDumpDecisionTree(Dumper* dumper, const DecisionTree* tree,
                                     size_t highlightedNodeInd);
 DumperErrors dumperDestructor(Dumper* dumper);
@@ -34,6 +37,7 @@ const char* getDumperErrorMessage(DumperErrors error);
         stateLogFile((dumper)->allLogsFile);\
         LOG_DEBUG_VARS(__VA_ARGS__);\
         flushLogFile();\
+        stateLogFile(NULL);\
         dumperAddDebugInfoToAllLogsFile(dumper, "</pre>\n");\
     } while (0)
 

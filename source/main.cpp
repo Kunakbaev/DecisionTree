@@ -28,18 +28,10 @@ int main() {
 
     IF_MAIN_ERR_RETURN(readDecisionTreeFromFile(&tree, "fruitsAndVegetablesDB.txt"));
     IF_MAIN_ERR_RETURN(dumpDecisionTree(&tree));
-    IF_MAIN_ERR_RETURN(saveDecisionTreeToFile(&tree, "treeDBoutput.txt"));
-
-//     IF_MAIN_ERR_RETURN(tryToGuessObject(&tree));
-//     IF_MAIN_ERR_RETURN(dumpDecisionTree(&tree));
-//
-//     IF_MAIN_ERR_RETURN(tryToGuessObject(&tree));
-//     IF_MAIN_ERR_RETURN(dumpDecisionTree(&tree));
-//
-//     IF_MAIN_ERR_RETURN(tryToGuessObject(&tree));
-//     IF_MAIN_ERR_RETURN(dumpDecisionTree(&tree));
-//
-//     IF_MAIN_ERR_RETURN(printPathToObjByName(&tree, "hui"));
+    IF_MAIN_ERR_RETURN(printPathToObjByName(&tree, "grape"));
+    IF_MAIN_ERR_RETURN(printPathToObjByName(&tree, "nektarin"));
+    IF_MAIN_ERR_RETURN(dumpCommonPathOf2Objects(&tree, "grape", "kivi"));
+    IF_MAIN_ERR_RETURN(dumpCommonPathOf2Objects(&tree, "watermelon", "potato"));
 
     destructDecisionTree(&tree);
 
