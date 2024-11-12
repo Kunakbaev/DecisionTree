@@ -28,6 +28,7 @@ int main() {
 
     IF_MAIN_ERR_RETURN(readDecisionTreeFromFile(&tree, "fruitsAndVegetablesDB.txt"));
     IF_MAIN_ERR_RETURN(dumpDecisionTree(&tree));
+    IF_MAIN_ERR_RETURN(saveDecisionTreeToFile(&tree, "treeDBoutput.txt"));
 
 //     IF_MAIN_ERR_RETURN(tryToGuessObject(&tree));
 //     IF_MAIN_ERR_RETURN(dumpDecisionTree(&tree));

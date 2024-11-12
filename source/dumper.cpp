@@ -146,8 +146,8 @@ static DumperErrors addNodeDumpStructToBuffer(Dumper* dumper,
             "<TABLE cellspacing=\"0\"> \n"
                 "<TR><TD colspan=\"2\">data:  %s</TD></TR>\n"
                 "<TR><TD colspan=\"2\">memIndex:  %zu</TD></TR>\n"
-                "<TR><TD>left:  %zu</TD>\n"
-                "<TD>right: %zu</TD></TR>\n"
+                "<TR><TD>no:  %zu</TD>\n"
+                "<TD>yes: %zu</TD></TR>\n"
                 "</TABLE> \n"
                 " >];\n", node->memBuffIndex, color, node->data, node->memBuffIndex, node->left, node->right);
         // LOG_DEBUG_VARS(tmpBuffer, node->data);
@@ -224,15 +224,15 @@ static DumperErrors drawDecisionTreeRecursively(Dumper* dumper, const DecisionTr
         assert(parentInd < tree->memBuffSize);
         Node parent = tree->memBuff[parentInd];
         if (nodeInd == parent.left) {
-            snprintf(tmpBuffer, TMP_BUFFER_SIZE, "iamnode_id_%zu -> iamnode_id_%zu [color=orange, fontcolor=white, label=<No>]\n",
+            snprintf(tmpBuffer, TMP_BUFFER_SIZE, "iamnode_id_%zu -> iamnode_id_%zu [color=orange, fontcolor=white, weight=1]\n",
                 parentInd, nodeInd);
         } else {
-            snprintf(tmpBuffer, TMP_BUFFER_SIZE, "iamnode_id_%zu -> iamnode_id_%zu [color=lightblue, fontcolor=white, label=<Yes>]\n",
+            snprintf(tmpBuffer, TMP_BUFFER_SIZE, "iamnode_id_%zu -> iamnode_id_%zu [color=lightblue, fontcolor=white, weight=1]\n",
                 parentInd, nodeInd);
         }
 
         size_t tmpBuffLen = strlen(tmpBuffer);
-        snprintf(tmpBuffer + tmpBuffLen, TMP_BUFFER_SIZE - tmpBuffLen, "iamnode_id_%zu -> iamnode_id_%zu [color=purple, fontcolor=white, label=<prev>]\n",
+        snprintf(tmpBuffer + tmpBuffLen, TMP_BUFFER_SIZE - tmpBuffLen, "iamnode_id_%zu -> iamnode_id_%zu [color=purple, fontcolor=white]\n",
                 nodeInd, tree->memBuff[nodeInd].parent);
         strncat(buffer, tmpBuffer, BUFFER_SIZE);
     }
@@ -269,7 +269,7 @@ DumperErrors dumperDumpDecisionTree(Dumper* dumper, const DecisionTree* tree,
     strncat(buffer, "digraph html {\n\
         overlap=false\n\
         bgcolor=\"black\"\n\
-        rankdir=TD\n\
+        rankdir=TB\n\
         pad=0.2\n\
     ", BUFFER_SIZE);
 

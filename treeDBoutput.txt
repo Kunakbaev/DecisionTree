@@ -1,0 +1,69 @@
+{
+	is fruit?
+	{
+		is huge2?
+		{
+			lives underground?
+			{
+				orange?
+				{
+					cabbage
+				}
+				{
+					carrot
+				}
+			}
+			{
+				used for borsch?
+				{
+					potato
+				}
+				{
+					beet
+				}
+			}
+		}
+		{
+			pumpkin
+		}
+	}
+	{
+		is huge?
+		{
+			is long?
+			{
+				is hairy?
+				{
+					has small balls?
+					{
+						apple
+					}
+					{
+						grape
+					}
+				}
+				{
+					bird name?
+					{
+						nektarin
+					}
+					{
+						kivi
+					}
+				}
+			}
+			{
+				banana
+			}
+		}
+		{
+			has stripes?
+			{
+				melon
+			}
+			{
+				watermelon
+			}
+		}
+	}
+}
