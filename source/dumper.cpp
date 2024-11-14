@@ -58,17 +58,6 @@ DumperErrors dumperConstructor(Dumper* dumper,
     dumper->outputFileFormat    = outputFileFormat;
     dumper->numberOfLogsBefore  = 0;
 
-    char* allLogsFilePath = (char*)calloc(FULL_FILE_NAME_BUFFER_SIZE, sizeof(char));
-    snprintf(allLogsFilePath, FULL_FILE_NAME_BUFFER_SIZE,
-             "%s/allLogs.html", dumper->dirForLogsPath);
-    IF_NOT_COND_RETURN(allLogsFilePath != NULL,
-                       DUMPER_ERROR_MEMORY_ALLOCATION_ERROR);
-    dumper->allLogsFile = fopen(allLogsFilePath, "w");
-    IF_NOT_COND_RETURN(dumper->allLogsFile != NULL,
-                       DUMPER_ERROR_COULD_OPEN_FILE);
-    FREE(allLogsFilePath);
-    setvbuf(dumper->allLogsFile, NULL, 0, _IONBF);
-
     fileFullNameBuffer = (char*)calloc(FULL_FILE_NAME_BUFFER_SIZE, sizeof(char));
     IF_NOT_COND_RETURN(fileFullNameBuffer != NULL,
                        DUMPER_ERROR_MEMORY_ALLOCATION_ERROR);
@@ -92,6 +81,17 @@ DumperErrors dumperConstructor(Dumper* dumper,
     system("mkdir -p logs/images");
     system("mkdir -p logs/html");
     system("mkdir -p logs/dots");
+
+    char* allLogsFilePath = (char*)calloc(FULL_FILE_NAME_BUFFER_SIZE, sizeof(char));
+    snprintf(allLogsFilePath, FULL_FILE_NAME_BUFFER_SIZE,
+             "%s/allLogs.html", dumper->dirForLogsPath);
+    IF_NOT_COND_RETURN(allLogsFilePath != NULL,
+                       DUMPER_ERROR_MEMORY_ALLOCATION_ERROR);
+    dumper->allLogsFile = fopen(allLogsFilePath, "w");
+    IF_NOT_COND_RETURN(dumper->allLogsFile != NULL,
+                       DUMPER_ERROR_COULD_OPEN_FILE);
+    FREE(allLogsFilePath);
+    setvbuf(dumper->allLogsFile, NULL, 0, _IONBF);
 
     dumperAddDebugInfoToAllLogsFile(dumper, "<body style=\"background: black; overflow: scroll; margin: 15px\">\n");
 
