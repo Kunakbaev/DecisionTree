@@ -114,25 +114,6 @@ void dumperAddImgToAllLogsFile(Dumper* dumper, const char* imagePath) {
     LOG_DEBUG("---------------");
 }
 
-static DumperErrors getNodesColorNormal(const Node* node, size_t highlightedNodeInd, char** result) {
-    IF_ARG_NULL_RETURN(node);
-    IF_ARG_NULL_RETURN(result);
-
-    memset(tmpBuffer, 0, TMP_BUFFER_SIZE);
-    *result = (char*)calloc(COLOR_LEN, sizeof(char));
-    IF_NOT_COND_RETURN(*result != NULL, DUMPER_ERROR_MEMORY_ALLOCATION_ERROR);
-    const char* greenColor = "green";
-    const char* whiteColor = "white";
-
-    // TODO: maybe pass as parameter how many last nodes should be highlighted
-    if (highlightedNodeInd - 1 <= node->memBuffIndex)
-        memcpy(*result, greenColor, strlen(greenColor));
-    else
-        memcpy(*result, whiteColor, strlen(whiteColor));
-
-    return DUMPER_STATUS_OK;
-}
-
 static DumperErrors addNodeDumpStructToBuffer(Dumper* dumper,
                                               const Node* node,
                                               const char* color) {
@@ -170,8 +151,7 @@ static DumperErrors addNodeDumpStructToBuffer(Dumper* dumper,
     return DUMPER_STATUS_OK;
 }
 
-DumperErrors dumperDumpSingleTreeNode(Dumper* dumper, const Node* node, size_t highlightedNodeInd,
-                                      const char* formatForNodeData) {
+DumperErrors dumperDumpSingleTreeNode(Dumper* dumper, const Node* node, const char* nodeColor) {
     IF_ARG_NULL_RETURN(dumper);
 
     LOG_DEBUG("single node dumping ---------------------");
@@ -197,10 +177,7 @@ DumperErrors dumperDumpSingleTreeNode(Dumper* dumper, const Node* node, size_t h
         pad=0.2\n\
     ", BUFFER_SIZE);
 
-    char* color = NULL;
-    getNodesColorNormal(node, highlightedNodeInd, &color);
-    IF_ERR_RETURN(addNodeDumpStructToBuffer(dumper, node, color));
-    FREE(color);
+    IF_ERR_RETURN(addNodeDumpStructToBuffer(dumper, node, nodeColor));
     strncat(buffer, "}\n", BUFFER_SIZE);
     fprintf(outputFile, buffer);
     fclose(outputFile);
@@ -223,89 +200,36 @@ DumperErrors dumperDumpSingleTreeNode(Dumper* dumper, const Node* node, size_t h
 
 
 
+const char*  DEFAULT_COLOR         = "white";
 
-static DumperErrors getNodesColorForCommonPathFunc(const Node* node, size_t cntOccur, char** result) {
-    IF_ARG_NULL_RETURN(node);
-    IF_ARG_NULL_RETURN(result);
+const char* getNodeColor(const Node* node, const NodesWithColor* coloringRule, size_t coloringRuleLen) {
+    assert(node            != NULL);
+    assert(coloringRule    != NULL);
+    assert(coloringRuleLen  < MAX_COLORING_RULE_LEN);
 
-    memset(tmpBuffer, 0, TMP_BUFFER_SIZE);
-    *result = (char*)calloc(COLOR_LEN, sizeof(char));
-    IF_NOT_COND_RETURN(*result != NULL, DUMPER_ERROR_MEMORY_ALLOCATION_ERROR);
-    const char* greenColor = "green";
-    const char* whiteColor = "white";
-    const char* redColor   = "red";
+    for (size_t arrInd = 0; arrInd < coloringRuleLen; ++arrInd) {
+        const char* color = coloringRule[arrInd].color;
+        size_t* nodes     = coloringRule[arrInd].nodes;
+        size_t  nodesLen  = coloringRule[arrInd].numOfNodes;
 
-    // TODO: maybe pass as parameter how many last nodes should be highlighted
-    //LOG_DEBUG_VARS(cntOccur);
-    if (cntOccur == 0)
-        memcpy(*result, whiteColor, strlen(whiteColor));
-    if (cntOccur == 1)
-        memcpy(*result, redColor, strlen(redColor));
-    if (cntOccur == 2)
-        memcpy(*result, greenColor, strlen(greenColor));
-
-    return DUMPER_STATUS_OK;
-}
-
-static DumperErrors
-superDuperPuperSlow_drawDecisionTreeRecursivelyCommonPathHighlight(
-Dumper* dumper, const DecisionTree* tree,
-size_t nodeInd, size_t parentInd,
-size_t pathLen1, size_t* path1,
-size_t pathLen2, size_t* path2) {
-    IF_ARG_NULL_RETURN(dumper);
-    IF_ARG_NULL_RETURN(tree);
-    IF_ARG_NULL_RETURN(path1);
-    IF_ARG_NULL_RETURN(path2);
-
-    if (nodeInd == 0) // subtree is empty
-        return DUMPER_STATUS_OK;
-
-    assert(nodeInd < tree->memBuffSize);
-    Node node = tree->memBuff[nodeInd];
-
-    // FIXME: bruuuuuuuuuuh, it works longer than your grandma comes too the second floor
-    size_t cntOccur = 0;
-    for (size_t i = 0; i < pathLen1; ++i)
-        cntOccur += path1[i] == nodeInd;
-    for (size_t i = 0; i < pathLen2; ++i)
-        cntOccur += path2[i] == nodeInd;
-
-    char* color = NULL;
-    getNodesColorForCommonPathFunc(&node, cntOccur, &color);
-    //LOG_DEBUG_VARS(nodeInd, cntOccur, color);
-    IF_ERR_RETURN(addNodeDumpStructToBuffer(dumper, &node, color));
-    FREE(color);
-
-    if (parentInd != 0) {
-        memset(tmpBuffer, 0, TMP_BUFFER_SIZE);
-
-        assert(parentInd < tree->memBuffSize);
-        Node parent = tree->memBuff[parentInd];
-        if (nodeInd == parent.left) {
-            snprintf(tmpBuffer, TMP_BUFFER_SIZE, "iamnode_id_%zu -> iamnode_id_%zu [color=orange, fontcolor=white, weight=1]\n",
-                parentInd, nodeInd);
-        } else {
-            snprintf(tmpBuffer, TMP_BUFFER_SIZE, "iamnode_id_%zu -> iamnode_id_%zu [color=lightblue, fontcolor=white, weight=1]\n",
-                parentInd, nodeInd);
+        for (size_t nodeArrInd = 0; nodeArrInd < nodesLen; ++nodeArrInd) {
+            size_t nodeInd = nodes[nodeArrInd];
+            if (nodeInd == node->memBuffIndex) {
+                return color;
+            }
         }
-
-        size_t tmpBuffLen = strlen(tmpBuffer);
-        snprintf(tmpBuffer + tmpBuffLen, TMP_BUFFER_SIZE - tmpBuffLen, "iamnode_id_%zu -> iamnode_id_%zu [color=purple, fontcolor=white]\n",
-                nodeInd, tree->memBuff[nodeInd].parent);
-        strncat(buffer, tmpBuffer, BUFFER_SIZE);
     }
 
-    IF_ERR_RETURN(superDuperPuperSlow_drawDecisionTreeRecursivelyCommonPathHighlight(dumper, tree, node.left , nodeInd, pathLen1, path1, pathLen2, path2));
-    IF_ERR_RETURN(superDuperPuperSlow_drawDecisionTreeRecursivelyCommonPathHighlight(dumper, tree, node.right, nodeInd, pathLen1, path1, pathLen2, path2));
-
-    return DUMPER_STATUS_OK;
+    return DEFAULT_COLOR; // maybe log error
 }
 
 static DumperErrors drawDecisionTreeRecursively(Dumper* dumper, const DecisionTree* tree,
-                                                size_t nodeInd, size_t parentInd, size_t highlightedNodeInd) {
+                                                size_t nodeInd, size_t parentInd,
+                                                const NodesWithColor* coloringRule,
+                                                size_t coloringRuleLen) {
     IF_ARG_NULL_RETURN(dumper);
     IF_ARG_NULL_RETURN(tree);
+    IF_ARG_NULL_RETURN(coloringRule);
 
     if (nodeInd == 0) // subtree is empty
         return DUMPER_STATUS_OK;
@@ -313,10 +237,8 @@ static DumperErrors drawDecisionTreeRecursively(Dumper* dumper, const DecisionTr
     assert(nodeInd < tree->memBuffSize);
     Node node = tree->memBuff[nodeInd];
 
-    char* color = NULL;
-    getNodesColorNormal(&node, highlightedNodeInd, &color);
+    const char* color = getNodeColor(&node, coloringRule, coloringRuleLen);
     IF_ERR_RETURN(addNodeDumpStructToBuffer(dumper, &node, color));
-    FREE(color);
 
     if (parentInd != 0) {
         memset(tmpBuffer, 0, TMP_BUFFER_SIZE);
@@ -337,8 +259,8 @@ static DumperErrors drawDecisionTreeRecursively(Dumper* dumper, const DecisionTr
         strncat(buffer, tmpBuffer, BUFFER_SIZE);
     }
 
-    IF_ERR_RETURN(drawDecisionTreeRecursively(dumper, tree, node.left , nodeInd, highlightedNodeInd));
-    IF_ERR_RETURN(drawDecisionTreeRecursively(dumper, tree, node.right, nodeInd, highlightedNodeInd));
+    IF_ERR_RETURN(drawDecisionTreeRecursively(dumper, tree, node.left , nodeInd, coloringRule, coloringRuleLen));
+    IF_ERR_RETURN(drawDecisionTreeRecursively(dumper, tree, node.right, nodeInd, coloringRule, coloringRuleLen));
 
     return DUMPER_STATUS_OK;
 }
@@ -357,7 +279,8 @@ char* getLastImageFileName(const Dumper* dumper) {
 }
 
 DumperErrors dumperDumpDecisionTree(Dumper* dumper, const DecisionTree* tree,
-                                    size_t highlightedNodeInd) {
+                                    const NodesWithColor* coloringRule,
+                                    size_t coloringRuleLen) {
     IF_ARG_NULL_RETURN(dumper);
     IF_ARG_NULL_RETURN(tree);
 
@@ -386,7 +309,7 @@ DumperErrors dumperDumpDecisionTree(Dumper* dumper, const DecisionTree* tree,
         pad=0.2\n\
     ", BUFFER_SIZE);
 
-    IF_ERR_RETURN(drawDecisionTreeRecursively(dumper, tree, tree->root, 0, highlightedNodeInd));
+    IF_ERR_RETURN(drawDecisionTreeRecursively(dumper, tree, tree->root, 0, coloringRule, coloringRuleLen));
 
     strncat(buffer, "}\n", BUFFER_SIZE);
     //LOG_DEBUG_VARS(buffer);
@@ -412,76 +335,6 @@ DumperErrors dumperDumpDecisionTree(Dumper* dumper, const DecisionTree* tree,
 
     return DUMPER_STATUS_OK;
 }
-
-// FIXME:
-// FIXME:
-// FIXME: too much copypaste
-
-DumperErrors dumperDumpDecisionTreeDrawCommonPathes(Dumper* dumper, const DecisionTree* tree,
-                                    size_t pathLen1, size_t* path1,
-                                    size_t pathLen2, size_t* path2) {
-    IF_ARG_NULL_RETURN(dumper);
-    IF_ARG_NULL_RETURN(tree);
-    IF_ARG_NULL_RETURN(path1);
-    IF_ARG_NULL_RETURN(path2);
-
-    LOG_DEBUG("decision tree dumping ---------------------");
-    ++dumper->numberOfLogsBefore;
-    memset(fileNameBuffer, 0, FILE_NAME_BUFFER_SIZE);
-    // TODO: rewrite with snprintf
-    snprintf(fileNameBuffer, FILE_NAME_BUFFER_SIZE, "dots/%zu_list.dot",
-             dumper->numberOfLogsBefore);
-
-    memset(fileFullNameBuffer, 0, FULL_FILE_NAME_BUFFER_SIZE);
-    snprintf(fileFullNameBuffer, FULL_FILE_NAME_BUFFER_SIZE,
-             "%s/%s", dumper->dirForLogsPath, fileNameBuffer);
-
-    LOG_DEBUG_VARS(fileFullNameBuffer, fileNameBuffer);
-    FILE* outputFile = fopen(fileFullNameBuffer, "w");
-    IF_NOT_COND_RETURN(outputFile != NULL,
-                       DUMPER_ERROR_COULD_OPEN_FILE);
-
-    memset(buffer, 0, BUFFER_SIZE);
-    // FIXME: add errors check
-    strncat(buffer, "digraph html {\n\
-        overlap=false\n\
-        bgcolor=\"black\"\n\
-        rankdir=TB\n\
-        pad=0.2\n\
-    ", BUFFER_SIZE);
-
-    // FIXME: bruuh, super ugly
-    IF_ERR_RETURN(superDuperPuperSlow_drawDecisionTreeRecursivelyCommonPathHighlight(dumper, tree, tree->root, 0,
-        pathLen1, path1, pathLen2, path2));
-
-    strncat(buffer, "}\n", BUFFER_SIZE);
-    //LOG_DEBUG_VARS(buffer);
-    fprintf(outputFile, buffer);
-    fclose(outputFile);
-
-    memset(fileNameBuffer, 0, FILE_NAME_BUFFER_SIZE);
-    snprintf(fileNameBuffer, FILE_NAME_BUFFER_SIZE,
-            "%zu_list.%s", dumper->numberOfLogsBefore, dumper->outputFileFormat);
-    LOG_DEBUG_VARS(fileNameBuffer);
-
-    // TODO: put assert for ;
-    memset(fileFullNameBuffer, 0, FILE_NAME_BUFFER_SIZE);
-    snprintf(fileFullNameBuffer, FULL_FILE_NAME_BUFFER_SIZE,
-             "dot -Tpng logs/dots/%zu_list.dot -o %s/images/%s",
-            dumper->numberOfLogsBefore, dumper->dirForLogsPath, fileNameBuffer);
-    LOG_DEBUG_VARS(fileFullNameBuffer);
-    // WARNING: some nasty command can be substituted
-    system(fileFullNameBuffer);
-
-    memset(fileFullNameBuffer, 0, FILE_NAME_BUFFER_SIZE);
-    snprintf(fileFullNameBuffer, FULL_FILE_NAME_BUFFER_SIZE,
-             "images/%s", fileNameBuffer);
-    LOG_DEBUG_VARS(fileFullNameBuffer);
-    dumperAddImgToAllLogsFile(dumper, fileFullNameBuffer);
-
-    return DUMPER_STATUS_OK;
-}
-
 
 DumperErrors dumperDestructor(Dumper* dumper) {
     IF_ARG_NULL_RETURN(dumper);

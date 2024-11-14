@@ -84,7 +84,6 @@ static DecisionTreeErrors resizeMemBuffer(DecisionTree* tree, size_t newSize) {
         tree->memBuff[nodeInd].memBuffIndex = nodeInd;
     }
 
-    LOG_DEBUG_VARS("bruh");
     return DECISION_TREE_STATUS_OK;
 }
 
@@ -160,7 +159,6 @@ static DecisionTreeErrors checkThatObjNotInTree(const DecisionTree* tree, const 
     // TODO: check only leaf nodes, because nodes are only in leaves
     for (size_t ind = 1; ind < tree->memBuffSize; ++ind) {
         const char* const ptr = tree->memBuff[ind].data;
-        // LOG_DEBUG_VARS(ptr, objName);
         if (ptr != NULL && strcmp(ptr, objName) == 0) {
             return DECISION_TREE_OBJ_ALREADY_EXISTS;
         }
@@ -407,7 +405,8 @@ static DecisionTreeErrors getPathToDecisionTreeNode(const DecisionTree* tree, co
     return DECISION_TREE_STATUS_OK;
 }
 
-static DecisionTreeErrors getPathToObjByName(const DecisionTree* tree, const char* objName, size_t* pathLen, size_t** path) {
+static DecisionTreeErrors getPathToObjByName(const DecisionTree* tree, const char* objName,
+                                             size_t* pathLen, size_t** path) {
     IF_ARG_NULL_RETURN(tree);
     IF_ARG_NULL_RETURN(objName);
     IF_ARG_NULL_RETURN(pathLen);
@@ -426,24 +425,10 @@ DecisionTreeErrors printPathToObjByName(const DecisionTree* tree, const char* ob
     IF_ARG_NULL_RETURN(tree);
     IF_ARG_NULL_RETURN(objName);
 
-//     Node node = {};
-//     IF_ERR_RETURN(getDecisionTreeNodeByObjName(tree, objName, &node));
-//     LOG_DEBUG_VARS(node.data, objName);
-//
-//     size_t depth = getNodesDepth(tree, &node);
-//     LOG_DEBUG_VARS(depth);
-//     size_t* path = (size_t*)calloc(depth, sizeof(size_t));
-//     IF_NOT_COND_RETURN(path != NULL,
-//                        DECISION_TREE_MEMORY_ALLOCATION_ERROR);
-//
-//     LOG_DEBUG_VARS("okey");
-//     IF_ERR_RETURN(fillPathArrayFromRootToNode(tree, &node, depth, path));
-
-    size_t* path = NULL;
+    size_t*   path = NULL;
     size_t pathLen = 0;
     IF_ERR_RETURN(getPathToObjByName(tree, objName, &pathLen, &path));
 
-    LOG_DEBUG_VARS("biba");
     IF_ERR_RETURN(printPathArrayFromRootToNode(tree, pathLen, path, true));
     FREE(path);
 
@@ -627,7 +612,7 @@ DecisionTreeErrors dumpDecisionTree(DecisionTree* tree) {
     IF_NOT_COND_RETURN(outputBuffer != NULL,
                        DECISION_TREE_MEMORY_ALLOCATION_ERROR);
 
-    for (size_t nodeInd = 0; nodeInd < 5; ++nodeInd) {
+    for (size_t nodeInd = 0; nodeInd < tree->memBuffSize; ++nodeInd) {
         Node node = tree->memBuff[nodeInd];
         const char* data = node.data;
         size_t parent = node.parent;
@@ -644,7 +629,16 @@ DecisionTreeErrors dumpDecisionTree(DecisionTree* tree) {
     FREE(outputBuffer);
 
     // FIXME: add dumper err check
-    DUMPER_ERR_CHECK(dumperDumpDecisionTree(&tree->dumper, tree, tree->freeNodeIndex));
+    size_t nodesArr[MAX_NUM_OF_NODES_IN_ONE_COLOR_WITH_NODES_STRUCT] = {}; // ASK: is it ok?
+    nodesArr[0] = {tree->freeNodeIndex};
+    NodesWithColor rule1 = {
+        "green",
+        (size_t)1,
+        nodesArr,
+    };
+    NodesWithColor coloringRule[] = {rule1};
+    LOG_DEBUG_VARS("i am dum dum");
+    DUMPER_ERR_CHECK(dumperDumpDecisionTree(&tree->dumper, tree, coloringRule, 1));
 
     return DECISION_TREE_STATUS_OK;
 }
@@ -678,8 +672,46 @@ DecisionTreeErrors dumpCommonPathOf2Objects(DecisionTree* tree, const char* objN
     size_t pathLen2 = 0;
     IF_ERR_RETURN(getPathToObjByName(tree, objName2, &pathLen2, &path2));
 
+    size_t* cntArr = (size_t*)calloc(tree->memBuffSize, sizeof(size_t));
+    IF_NOT_COND_RETURN(cntArr != NULL,
+                       DECISION_TREE_MEMORY_ALLOCATION_ERROR);
+    for (int i = 0; i < pathLen1; ++i) ++cntArr[path1[i]];
+    for (int i = 0; i < pathLen2; ++i) ++cntArr[path2[i]];
+
     // FIXME: add dumper err check
-    DUMPER_ERR_CHECK(dumperDumpDecisionTreeDrawCommonPathes(&tree->dumper, tree, pathLen1, path1, pathLen2, path2));
+    size_t commonNodes[MAX_NUM_OF_NODES_IN_ONE_COLOR_WITH_NODES_STRUCT] = {}; // ASK: is it ok?
+    size_t diffNodes  [MAX_NUM_OF_NODES_IN_ONE_COLOR_WITH_NODES_STRUCT] = {}; // ASK: is it ok?
+    size_t commonNodesLen = 0;
+    size_t diffNodesLen   = 0;
+    for (int i = 0; i < tree->memBuffSize; ++i) {
+        if (cntArr[i] == 0) continue;
+
+        if (cntArr[i] == 2) {
+            if (commonNodesLen >= MAX_NUM_OF_NODES_IN_ONE_COLOR_WITH_NODES_STRUCT)
+                continue; // ASK: throw error?
+            LOG_DEBUG_VARS("common", i);
+            commonNodes[commonNodesLen++] = i;
+        } else {
+            if (diffNodesLen >= MAX_NUM_OF_NODES_IN_ONE_COLOR_WITH_NODES_STRUCT)
+                continue; // ASK: throw error?
+            LOG_DEBUG_VARS("different", i);
+            diffNodes[diffNodesLen++] = i;
+        }
+    }
+
+    NodesWithColor commonNodesRule = {
+        "green",
+        (size_t)commonNodesLen,
+        commonNodes,
+    };
+    NodesWithColor diffNodesRule = {
+        "red",
+        (size_t)diffNodesLen,
+        diffNodes,
+    };
+    LOG_DEBUG_VARS("i am dum dum");
+    NodesWithColor coloringRule[] = {commonNodesRule, diffNodesRule};
+    DUMPER_ERR_CHECK(dumperDumpDecisionTree(&tree->dumper, tree, coloringRule, 2));
 
     const char* fileName = getLastImageFileName((Dumper*)&tree->dumper);
     const size_t TMP_LEN = 100;
@@ -892,6 +924,7 @@ size_t NUM_OF_COMMANDS = sizeof(arrayOfCommands) / sizeof(*arrayOfCommands);
 DecisionTreeErrors executeCommand(DecisionTree* tree, const char* commandName, bool* isQuit) {
     IF_ARG_NULL_RETURN(tree);
     IF_ARG_NULL_RETURN(commandName);
+    IF_ARG_NULL_RETURN(isQuit);
 
     if (strcmp(commandName, QUIT_COMMAND) == 0) {
         *isQuit = true;

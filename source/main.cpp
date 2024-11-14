@@ -19,7 +19,6 @@
 
 // DecisionTreeErrors addValueAndDump(DecisionTree* tree, const void* value);
 
-
 int main() {
     setLoggingLevel(DEBUG);
 

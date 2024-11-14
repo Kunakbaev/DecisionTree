@@ -14,18 +14,25 @@ enum DumperErrors {
 #include "dumperStruct.hpp"
 #include "decisionTreeLib.hpp"
 
+const size_t MAX_COLORING_RULE_LEN                           = 20;
+const size_t MAX_NUM_OF_NODES_IN_ONE_COLOR_WITH_NODES_STRUCT = 100;
+
+struct NodesWithColor {
+    const char* color;
+    size_t      numOfNodes;
+    size_t*     nodes;
+};
+
 DumperErrors dumperConstructor(Dumper* dumper,
                                size_t maxNumOfNodesToDraw,
                                const char* dirForLogsPath,
                                const char* outputFileFormat);
 void dumperAddDebugInfoToAllLogsFile(Dumper* dumper, const char* debugInfo);
 void dumperAddImgToAllLogsFile(Dumper* dumper, const char* imagePath);
-DumperErrors dumperDumpSingleTreeNode(Dumper* dumper, const Node* node, size_t highlightedNodeInd, const char* formatForNodeData);
-DumperErrors dumperDumpDecisionTreeDrawCommonPathes(Dumper* dumper, const DecisionTree* tree,
-                                    size_t pathLen1, size_t* path1,
-                                    size_t pathLen2, size_t* path2);
+DumperErrors dumperDumpSingleTreeNode(Dumper* dumper, const Node* node, const char* nodeColor);
 DumperErrors dumperDumpDecisionTree(Dumper* dumper, const DecisionTree* tree,
-                                    size_t highlightedNodeInd);
+                                    const NodesWithColor* coloringRule,
+                                    size_t coloringRuleLen);
 char* getLastImageFileName(const Dumper* dumper);
 DumperErrors dumperDestructor(Dumper* dumper);
 
