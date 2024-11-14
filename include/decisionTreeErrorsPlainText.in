@@ -5,3 +5,5 @@ ERROR_UNPACK(DECISION_TREE_OBJ_NOT_FOUND,           4, "object doesn't exist in 
 ERROR_UNPACK(DECISION_TREE_OBJ_ALREADY_EXISTS,      5, "object already exists in database.\n\n")
 ERROR_UNPACK(DECISION_TREE_FILE_OPENING_ERROR,      6, "couldn't open file error.\n")
 ERROR_UNPACK(DECISION_TREE_DUMPER_ERROR,            7, "error occured in dumper submodule.\n")
+ERROR_UNPACK(DECISION_TREE_SAME_OBJ_NAMES,          8, "names of 2 objects must not be equal.\n")
+

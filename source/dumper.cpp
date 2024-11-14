@@ -200,17 +200,17 @@ DumperErrors dumperDumpSingleTreeNode(Dumper* dumper, const Node* node, const ch
 
 
 
-const char*  DEFAULT_COLOR         = "white";
+static const char*  DEFAULT_COLOR = "white";
 
-const char* getNodeColor(const Node* node, const NodesWithColor* coloringRule, size_t coloringRuleLen) {
+static const char* getNodeColor(const Node* node, const NodesWithColor* coloringRule, size_t coloringRuleLen) {
     assert(node            != NULL);
     assert(coloringRule    != NULL);
     assert(coloringRuleLen  < MAX_COLORING_RULE_LEN);
 
     for (size_t arrInd = 0; arrInd < coloringRuleLen; ++arrInd) {
         const char* color = coloringRule[arrInd].color;
-        size_t* nodes     = coloringRule[arrInd].nodes;
-        size_t  nodesLen  = coloringRule[arrInd].numOfNodes;
+        size_t*     nodes = coloringRule[arrInd].nodes;
+        size_t   nodesLen = coloringRule[arrInd].numOfNodes;
 
         for (size_t nodeArrInd = 0; nodeArrInd < nodesLen; ++nodeArrInd) {
             size_t nodeInd = nodes[nodeArrInd];
