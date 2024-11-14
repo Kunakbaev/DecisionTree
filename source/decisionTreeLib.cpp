@@ -482,6 +482,7 @@ DecisionTreeErrors recursiveSaveOfTreeInFile(DecisionTree* tree, size_t nodeInd,
     Node node = tree->memBuff[nodeInd];
     fprintf(file, "%s{\n", tabs);
     fprintf(file, "%s\t%s\n", tabs, node.data);
+    LOG_DEBUG_VARS(tabs, node.data, nodeInd);
     IF_ERR_RETURN(recursiveSaveOfTreeInFile(tree, node.left, depth + 1, file));
     IF_ERR_RETURN(recursiveSaveOfTreeInFile(tree, node.right, depth + 1, file));
     fprintf(file, "%s}\n", tabs);
@@ -497,6 +498,7 @@ DecisionTreeErrors saveDecisionTreeToFile(DecisionTree* tree, const char* fileNa
     IF_NOT_COND_RETURN(file != NULL, DECISION_TREE_FILE_OPENING_ERROR);
 
     IF_ERR_RETURN(recursiveSaveOfTreeInFile(tree, tree->root, 0, file));
+    fclose(file);
 
     return DECISION_TREE_STATUS_OK;
 }
@@ -570,6 +572,8 @@ DecisionTreeErrors readDecisionTreeFromFile(DecisionTree* tree, const char* file
 
         IF_ERR_RETURN(addNewNodeForFile(tree, &node, len, tmp, preInd));
     }
+
+    fclose(file);
 
     return DECISION_TREE_STATUS_OK;
 }
@@ -677,6 +681,12 @@ DecisionTreeErrors dumpCommonPathOf2Objects(DecisionTree* tree, const char* objN
     // FIXME: add dumper err check
     DUMPER_ERR_CHECK(dumperDumpDecisionTreeDrawCommonPathes(&tree->dumper, tree, pathLen1, path1, pathLen2, path2));
 
+    const char* fileName = getLastImageFileName((Dumper*)&tree->dumper);
+    const size_t TMP_LEN = 100;
+    char tmp[TMP_LEN] = {};
+    snprintf(tmp, TMP_LEN, "xdg-open %s", fileName);
+    system(tmp);
+
     FREE(path1);
     FREE(path2);
 
@@ -710,14 +720,20 @@ DecisionTreeErrors destructDecisionTree(DecisionTree* tree) {
 
 
 const char* TERMINAL_HELP_MESSAGE =
-"help message\n"
-"--help shows this message\n"
-"openTreeImgState opens image of current state of decision tree\n"
-"guess asks questions and tries to guess object, if not found, adds object to the tree\n"
-"definition prints definition of an object with a given name\n"
+"help message:\n"
+"* help:         shows this message\n"
+"* show:         opens image of current state of decision tree\n"
+"* guess:        asks questions and tries to guess object, if not found, adds object to the tree\n"
+"* read:         reads decision tree from file\n"
+"* save:         saves decision tree to file\n"
+"* definition:   prints definition of an object with a given name\n"
+"* same:         prints same qualities for 2 objects\n"
+"* diff:         prints different quality for 2 objects\n"
+"* show diff:    shows image different qualities for 2 objects\n"
 ;
 
 const char* QUIT_COMMAND = "quit";
+const size_t BUFFER_SIZE = 100;
 
 DecisionTreeErrors terminalCmdHelp(DecisionTree* tree) {
     IF_ARG_NULL_RETURN(tree);
@@ -726,8 +742,6 @@ DecisionTreeErrors terminalCmdHelp(DecisionTree* tree) {
 
     return DECISION_TREE_STATUS_OK;
 }
-
-const size_t BUFFER_SIZE = 100;
 
 char* printInputMessageAndReadString(const char* inputMessage) {
     assert(inputMessage != NULL);
@@ -761,6 +775,17 @@ DecisionTreeErrors terminalCmdReadFromFile(DecisionTree* tree) {
     // TODO: remove copypaste
     char* buffer = printInputMessageAndReadString("print file name: ");
     IF_ERR_RETURN(readDecisionTreeFromFile(tree, buffer));
+    FREE(buffer);
+
+    return DECISION_TREE_STATUS_OK;
+}
+
+DecisionTreeErrors terminalCmdSaveToFile(DecisionTree* tree) {
+    IF_ARG_NULL_RETURN(tree);
+
+    // TODO: remove copypaste
+    char* buffer = printInputMessageAndReadString("print file name: ");
+    IF_ERR_RETURN(saveDecisionTreeToFile(tree, buffer));
     FREE(buffer);
 
     return DECISION_TREE_STATUS_OK;
@@ -820,6 +845,10 @@ DecisionTreeErrors commonOrDifferenceHelperFunc(DecisionTree* tree, bool isShowS
 
     FREE(objName1);
     FREE(objName2);
+    FREE(path1);
+    FREE(path2);
+    FREE(cntArr);
+    FREE(commonPath);
 
     return DECISION_TREE_STATUS_OK;
 }
@@ -830,6 +859,18 @@ DecisionTreeErrors terminalCmdShowCommonOf2Objects(DecisionTree* tree) {
 
 DecisionTreeErrors terminalCmdShowDifferenceOf2Objects(DecisionTree* tree) {
     IF_ERR_RETURN(commonOrDifferenceHelperFunc(tree, false));
+}
+
+DecisionTreeErrors terminalCmdShowDifferenceImage(DecisionTree* tree) {
+    IF_ARG_NULL_RETURN(tree);
+
+    char* objName1 = printInputMessageAndReadString("name of object_1: ");
+    char* objName2 = printInputMessageAndReadString("name of object_2: ");
+    IF_ERR_RETURN(dumpCommonPathOf2Objects(tree, objName1, objName2));
+    FREE(objName1);
+    FREE(objName2);
+
+    return DECISION_TREE_STATUS_OK;
 }
 
 typedef DecisionTreeErrors (*terminalCmdFuncPtr)(DecisionTree* tree);
@@ -871,10 +912,11 @@ DecisionTreeErrors mainProgramWhileTrue(DecisionTree* tree) {
     IF_ARG_NULL_RETURN(tree);
 
     bool isQuit = false;
-    char* buffer = NULL;
     while (!isQuit) {
-        buffer = printInputMessageAndReadString("Print your command: ");
+        // FIXME: uuuuhhh bruuuuh
+        char* buffer = printInputMessageAndReadString("Print your command: ");
         executeCommand(tree, buffer, &isQuit);
+        FREE(buffer);
     }
 
     return DECISION_TREE_STATUS_OK;

@@ -19,6 +19,7 @@
 
 // DecisionTreeErrors addValueAndDump(DecisionTree* tree, const void* value);
 
+
 int main() {
     setLoggingLevel(DEBUG);
 
@@ -28,7 +29,7 @@ int main() {
 
     IF_MAIN_ERR_RETURN(constructDecisionTree(&tree, &dumper));
 
-    // IF_MAIN_ERR_RETURN(readDecisionTreeFromFile(&tree, "fruitsAndVegetablesDB.txt"));
+    IF_MAIN_ERR_RETURN(readDecisionTreeFromFile(&tree, "fruitsAndVegetablesDB.txt"));
     // IF_MAIN_ERR_RETURN(openImageOfCurrentStateDecisionTree(&tree));
     IF_MAIN_ERR_RETURN(mainProgramWhileTrue(&tree));
 
