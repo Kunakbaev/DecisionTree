@@ -94,7 +94,7 @@ int main() {
     IF_MAIN_AKINATOR_ERR_RETURN(constructAkinator(&akinator, &dumper));
 
     LOG_DEBUG("does it work? :)");
-    // IF_MAIN_AKINATOR_ERR_RETURN(readAkinatorsDecisionTreeFromFile(&akinator, "fruitsAndVegetablesDB.txt"));
+    IF_MAIN_AKINATOR_ERR_RETURN(readAkinatorsDecisionTreeFromFile(&akinator, "fruitsAndVegetablesDB.txt"));
     // IF_MAIN_AKINATOR_ERR_RETURN(showImageOfAkinatorsDecisionTree(&akinator));
     // IF_MAIN_AKINATOR_ERR_RETURN(showDefinitionOfObject(&akinator, "potato"));
     // IF_MAIN_AKINATOR_ERR_RETURN(dumpCommonPathOf2Objects(&akinator, "potato", "cabbage"));

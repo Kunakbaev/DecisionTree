@@ -4,3 +4,4 @@ ERROR_UNPACK(AKINATOR_FILE_OPENING_ERROR,       3, "couldn't open file error.\n"
 ERROR_UNPACK(AKINATOR_DUMPER_ERROR,             4, "error occured in dumper submodule.\n")
 ERROR_UNPACK(AKINATOR_BINARY_TREE_ERROR,        5, "error occured in binary tree submodule.\n")
 ERROR_UNPACK(AKINATOR_OBJ_ALREADY_EXISTS,       6, "object is already exists in database.\n")
+ERROR_UNPACK(AKINATOR_TERMINAL_INTERFACE_ERROR, 7, "error occured in terminal interface submodule.\n")

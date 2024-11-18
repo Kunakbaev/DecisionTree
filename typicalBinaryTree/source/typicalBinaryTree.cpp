@@ -135,7 +135,7 @@ TypicalBinaryTreeErrors isValueInBinTree(const TypicalBinaryTree* tree, const vo
     return TYPICAL_BIN_TREE_STATUS_OK;
 }
 
-static TypicalBinaryTreeErrors getTypicalBinaryTreeNodeByValue(const TypicalBinaryTree* tree, const void* value, Node* result) {
+TypicalBinaryTreeErrors getTypicalBinaryTreeNodeByValue(const TypicalBinaryTree* tree, const void* value, Node* result) {
     IF_ARG_NULL_RETURN(tree);
     IF_ARG_NULL_RETURN(value);
     IF_ARG_NULL_RETURN(result);
@@ -188,7 +188,7 @@ TypicalBinaryTreeErrors addNewObjectToTypicalBinaryTree(TypicalBinaryTree* tree,
     return TYPICAL_BIN_TREE_STATUS_OK;
 }
 
-TypicalBinaryTreeErrors isNodeAleftSonOfParent(TypicalBinaryTree* tree, size_t parentInd, size_t vertInd, bool* is) {
+TypicalBinaryTreeErrors isNodeAleftSonOfParent(const TypicalBinaryTree* tree, size_t parentInd, size_t vertInd, bool* is) {
     IF_ARG_NULL_RETURN(tree);
     IF_NOT_COND_RETURN(parentInd < tree->memBuffSize,
                        TYPICAL_BIN_TREE_INVALID_ARGUMENT);
@@ -199,7 +199,7 @@ TypicalBinaryTreeErrors isNodeAleftSonOfParent(TypicalBinaryTree* tree, size_t p
     return TYPICAL_BIN_TREE_STATUS_OK;
 }
 
-TypicalBinaryTreeErrors getBinTreeNodeByVertIndex(TypicalBinaryTree* tree, size_t vertInd, Node* result) {
+TypicalBinaryTreeErrors getBinTreeNodeByVertIndex(const TypicalBinaryTree* tree, size_t vertInd, Node* result) {
     IF_ARG_NULL_RETURN(tree);
     IF_ARG_NULL_RETURN(result);
     IF_NOT_COND_RETURN(vertInd < tree->memBuffSize,
@@ -580,7 +580,7 @@ TypicalBinaryTreeErrors openImageOfCurrentStateTypicalBinaryTree(TypicalBinaryTr
     return TYPICAL_BIN_TREE_STATUS_OK;
 }
 
-static TypicalBinaryTreeErrors getCommonPathCntArray(TypicalBinaryTree* tree, size_t obj1, size_t obj2, size_t** cntArr) {
+TypicalBinaryTreeErrors getCommonPathCntArray(const TypicalBinaryTree* tree, size_t obj1, size_t obj2, size_t** cntArr) {
     IF_ARG_NULL_RETURN(tree);
     IF_ARG_NULL_RETURN(cntArr);
 

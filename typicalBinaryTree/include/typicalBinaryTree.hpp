@@ -38,7 +38,7 @@ TypicalBinaryTreeErrors constructTypicalBinaryTree(TypicalBinaryTree* tree, Dump
 TypicalBinaryTreeErrors addNewObjectToTypicalBinaryTree(TypicalBinaryTree* tree, size_t parentInd,
                                                         const void* value, bool isToLeftSon,
                                                         size_t* newNodeIndex);
-TypicalBinaryTreeErrors printPathToObjByValue(const TypicalBinaryTree* tree, const void* value);
+//TypicalBinaryTreeErrors printPathToObjByValue(const TypicalBinaryTree* tree, const void* value);
 TypicalBinaryTreeErrors getPathToObjByVertInd(const TypicalBinaryTree* tree, size_t vertInd,
                                               size_t* pathLen, size_t** path);
 TypicalBinaryTreeErrors getPathToObjByValue(const TypicalBinaryTree* tree, const void* value,
@@ -54,8 +54,10 @@ TypicalBinaryTreeErrors dumpCommonPathOf2Objects(TypicalBinaryTree* tree, size_t
 TypicalBinaryTreeErrors dumpCommonPathOf2ObjectsByValue(TypicalBinaryTree* tree,
                                                         const void* objValue_1, const void* objValue_2);
 
-TypicalBinaryTreeErrors getBinTreeNodeByVertIndex(TypicalBinaryTree* tree, size_t vertInd, Node* result);
-TypicalBinaryTreeErrors isNodeAleftSonOfParent(TypicalBinaryTree* tree, size_t parentInd, size_t vertInd, bool* is);
+TypicalBinaryTreeErrors getTypicalBinaryTreeNodeByValue(const TypicalBinaryTree* tree, const void* value, Node* result);
+TypicalBinaryTreeErrors getCommonPathCntArray(const TypicalBinaryTree* tree, size_t obj1, size_t obj2, size_t** cntArr);
+TypicalBinaryTreeErrors getBinTreeNodeByVertIndex(const TypicalBinaryTree* tree, size_t vertInd, Node* result);
+TypicalBinaryTreeErrors isNodeAleftSonOfParent(const TypicalBinaryTree* tree, size_t parentInd, size_t vertInd, bool* is);
 TypicalBinaryTreeErrors isValueInBinTree(const TypicalBinaryTree* tree, const void* value, bool* isIn);
 TypicalBinaryTreeErrors isBinTreeEmpty(const TypicalBinaryTree* tree, bool* is);
 TypicalBinaryTreeErrors isBinTreeNodeLeaf(const TypicalBinaryTree* tree, size_t currentNodeInd, bool* is);

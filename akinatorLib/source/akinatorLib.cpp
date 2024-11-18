@@ -3,6 +3,8 @@
 
 #include "../include/akinatorLib.hpp"
 #include "../../include/dumper.hpp"
+#include "../../terminalInterface/include/nodeDataReadAndWrite.hpp"
+#include "../../terminalInterface/include/terminalInterface.hpp"
 
 #define IF_ARG_NULL_RETURN(arg) \
     COMMON_IF_ARG_NULL_RETURN(arg, AKINATOR_INVALID_ARGUMENT, getAkinatorErrorMessage)
@@ -22,38 +24,14 @@
 #define BIN_TREE_ERR_CHECK(error) \
     COMMON_IF_SUBMODULE_ERR_RETURN(error, getTypicalBinaryTreeErrorMessage, TYPICAL_BIN_TREE_STATUS_OK, AKINATOR_BINARY_TREE_ERROR);
 
+#define TERMINAL_INTERFACE_ERR_CHECK(error) \
+    COMMON_IF_SUBMODULE_ERR_RETURN(error, getTerminalInterfaceErrorMessage, TERMINAL_INTERFACE_STATUS_OK, AKINATOR_TERMINAL_INTERFACE_ERROR);
+
 
 const size_t MIN_MEM_BUFF_SIZE  = 8;
 const size_t OUTPUT_BUFFER_SIZE = 1 << 9;
 const size_t MAX_OBJ_NAME_LEN   = 30;
 const char   BREAK_CHAR         = '#';
-
-const char* getStringFromVoidPtr(const void* voidPtr) {
-    //assert(voidPtr != NULL);
-    const char* ptr = (const char*)(voidPtr);
-    if (ptr == NULL)
-        return "";
-    return (const char*)(voidPtr);
-}
-
-static const char* nodeDataPrinter(const void* num) {
-    // LOG_DEBUG("node data printer");
-    const char* buffer = getStringFromVoidPtr(num);
-    return buffer;
-}
-
-void nodeDataReader(void** num, const char* line) {
-    // LOG_DEBUG("node data reader");
-    if (line == NULL) return;
-
-    *num = calloc(strlen(line) + 1, sizeof(char));
-    assert(*num != NULL);
-
-    LOG_DEBUG_VARS(line, num);
-    sscanf(line, "%[^\n]s", *num);
-    // LOG_ERROR("---------------------");
-    // LOG_DEBUG_VARS(num, line, (const char*)(*num));
-}
 
 static int cmpNodesByValue(const void* num, const void* num2) {
     //LOG_DEBUG_VARS("cmp of nodes", num, num2);
@@ -73,44 +51,6 @@ AkinatorErrors constructAkinator(Akinator* akinator, Dumper* dumper) {
         nodeDataReader,
         cmpNodesByValue
     ));
-
-    return AKINATOR_STATUS_OK;
-}
-
-
-
-static bool isAnswerOnQuestionYes() {
-    printf("Print yes or no: ");
-
-    const size_t ANS_BUFF_SIZE = 10;
-    char answerBuff[ANS_BUFF_SIZE];
-    fgets(answerBuff, ANS_BUFF_SIZE, stdin);
-
-    LOG_DEBUG_VARS(answerBuff);
-    return strcmp(answerBuff, "yes\n") == 0 ||
-           strcmp(answerBuff, "\n")    == 0;
-}
-
-
-
-static AkinatorErrors askQuestion(const Akinator* akinator, const Node* node, bool* isToLeftSon) {
-    IF_ARG_NULL_RETURN(akinator);
-    IF_ARG_NULL_RETURN(node);
-
-    // TODO: check that it's not leaf
-    printf("%s\n", node->data);
-    *isToLeftSon = !isAnswerOnQuestionYes();
-
-    return AKINATOR_STATUS_OK;
-}
-
-static AkinatorErrors isObjectGuessedCorrectly(Akinator* akinator, const Node* node, bool* isCorrectGuess) {
-    IF_ARG_NULL_RETURN(akinator);
-    IF_ARG_NULL_RETURN(node);
-    IF_ARG_NULL_RETURN(isCorrectGuess);
-
-    printf("Decision tree's guess is: \"%s\", is it your object?\n", node->data);
-    *isCorrectGuess = isAnswerOnQuestionYes();
 
     return AKINATOR_STATUS_OK;
 }
@@ -236,7 +176,7 @@ AkinatorErrors tryToGuessObject(Akinator* akinator) {
         BIN_TREE_ERR_CHECK(getBinTreeNodeByVertIndex(&akinator->tree, currentNodeInd, &node));
 
         bool isToLeftSon = false;
-        IF_ERR_RETURN(askQuestion(akinator, &node, &isToLeftSon));
+        TERMINAL_INTERFACE_ERR_CHECK(askQuestionFromNodesData(&node, &isToLeftSon));
         size_t next = (isToLeftSon ? node.left : node.right);
         if (next == 0) // ASK: cringe?
             break;
@@ -248,7 +188,7 @@ AkinatorErrors tryToGuessObject(Akinator* akinator) {
     BIN_TREE_ERR_CHECK(getBinTreeNodeByVertIndex(&akinator->tree, currentNodeInd, &node));
 
     bool isCorrGuess = false;
-    IF_ERR_RETURN(isObjectGuessedCorrectly(akinator, &node, &isCorrGuess));
+    TERMINAL_INTERFACE_ERR_CHECK(isObjectGuessedCorrectly(&node, &isCorrGuess));
     LOG_DEBUG_VARS(isCorrGuess);
     if (isCorrGuess) {
         return AKINATOR_STATUS_OK;
@@ -288,13 +228,12 @@ AkinatorErrors showDefinitionOfObject(Akinator* akinator, const char* objName) {
 
     BIN_TREE_ERR_CHECK(getPathToObjByValue(&akinator->tree, objName, &pathLen, &path));
 
-    LOG_DEBUG_VARS(pathLen);
-    LOG_INFO("definition: ");
-    for (size_t i = 0; i < pathLen; ++i)
-        printf("elem : %d, %d\n", i, path[i]);
+    // LOG_DEBUG_VARS(pathLen);
+    // LOG_INFO("definition: ");
+    // for (size_t i = 0; i < pathLen; ++i)
+    //     printf("elem : %d, %d\n", i, path[i]);
 
-    // IF_ERR_RETURN(printPathArrayFromRootToNode(tree, pathLen, path, true));
-    // fds
+    TERMINAL_INTERFACE_ERR_CHECK(printDefinitionOfObject(&akinator->tree, pathLen, path));
     FREE(path);
 
     return AKINATOR_STATUS_OK;

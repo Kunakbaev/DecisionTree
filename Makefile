@@ -25,7 +25,17 @@ endif
 # -------------------------   LIB RUN   -----------------------------
 
 # SRC 	   		   := $(SOURCE_DIR)/decisionTreeErrors.cpp $(SOURCE_DIR)/decisionTreeLib.cpp $(SOURCE_DIR)/dumper.cpp $(SOURCE_DIR)/main.cpp
-SRC 	   		   := $(BIN_TREE_PATH)/typicalBinaryTree.cpp $(BIN_TREE_PATH)/typicalBinaryTreeErrors.cpp $(BIN_TREE_PATH)/ $(AKINATOR_PATH)/akinatorLib.cpp $(AKINATOR_PATH)/akinatorLibErrors.cpp $(TERMINAL_INTERFACE)/terminalInterface.cpp $(TERMINAL_INTERFACE)/terminalInterfaceErrors.cpp $(SOURCE_DIR)/dumper.cpp $(SOURCE_DIR)/main.cpp
+SRC 	   		   := \
+	$(BIN_TREE_PATH)/typicalBinaryTree.cpp \
+	$(BIN_TREE_PATH)/typicalBinaryTreeErrors.cpp\
+	$(AKINATOR_PATH)/akinatorLib.cpp \
+	$(AKINATOR_PATH)/akinatorLibErrors.cpp \
+	$(TERMINAL_INTERFACE)/terminalInterface.cpp \
+	$(TERMINAL_INTERFACE)/terminalInterfaceErrors.cpp \
+	$(TERMINAL_INTERFACE)/nodeDataReadAndWrite.cpp \
+	$(SOURCE_DIR)/dumper.cpp \
+	$(SOURCE_DIR)/main.cpp\
+
 OBJ 	   		   := $(patsubst %.cpp, $(BUILD_DIR)/%.o, $(notdir ${SRC}))
 
 CFLAGS += -I $(LOGGER_EXT_LIB_DIR)/include

@@ -4,5 +4,5 @@ ERROR_UNPACK(TERMINAL_INTERFACE_INVALID_INPUT_STRING,    3, "invalid input strin
 ERROR_UNPACK(TERMINAL_INTERFACE_FILE_OPENING_ERROR,      4, "couldn't open file error.\n")
 ERROR_UNPACK(TERMINAL_INTERFACE_DUMPER_ERROR,            5, "error occured in dumper submodule.\n")
 ERROR_UNPACK(TERMINAL_INTERFACE_AKINATOR_ERROR,          6, "error occured in akinator submodule.\n")
-ERROR_UNPACK(TERMINAL_INTERFACE_SAME_OBJ_NAMES,          7, "names of objects should be different\n")
-
+ERROR_UNPACK(TERMINAL_INTERFACE_BIN_TREE_ERROR,          7, "error occured in typical binary tree submodule\n")
+ERROR_UNPACK(TERMINAL_INTERFACE_SAME_OBJ_NAMES,          8, "names of objects should be different\n")
