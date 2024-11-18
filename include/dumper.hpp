@@ -12,7 +12,7 @@ enum DumperErrors {
 };
 
 #include "dumperStruct.hpp"
-#include "decisionTreeLib.hpp"
+#include "../typicalBinaryTree/include/typicalBinaryTree.hpp"
 
 const size_t MAX_COLORING_RULE_LEN                           = 20;
 const size_t MAX_NUM_OF_NODES_IN_ONE_COLOR_WITH_NODES_STRUCT = 100;
@@ -30,9 +30,9 @@ DumperErrors dumperConstructor(Dumper* dumper,
 void dumperAddDebugInfoToAllLogsFile(Dumper* dumper, const char* debugInfo);
 void dumperAddImgToAllLogsFile(Dumper* dumper, const char* imagePath);
 DumperErrors dumperDumpSingleTreeNode(Dumper* dumper, const Node* node, const char* nodeColor);
-DumperErrors dumperDumpDecisionTree(Dumper* dumper, const DecisionTree* tree,
-                                    const NodesWithColor* coloringRule,
-                                    size_t coloringRuleLen);
+DumperErrors dumperDumpBinaryTree(Dumper* dumper, const TypicalBinaryTree* tree,
+                                      const NodesWithColor* coloringRule,
+                                      size_t coloringRuleLen);
 char* getLastImageFileName(const Dumper* dumper);
 DumperErrors dumperDestructor(Dumper* dumper);
 
@@ -46,7 +46,7 @@ const char* getDumperErrorMessage(DumperErrors error);
         LOG_DEBUG_VARS(__VA_ARGS__);\
         flushLogFile();\
         stateLogFile(NULL);\
-        dumperAddDebugInfoToAllLogsFile(dumper, "</pre>\n");\
+        /*dumperAddDebugInfoToAllLogsFile(dumper, "</pre>\n");\*/\
     } while (0)
 
 #define DEBUG_MESSAGE_TO_DUMPER_ALL_LOGS_FILE(dumper, message) \
@@ -56,7 +56,7 @@ const char* getDumperErrorMessage(DumperErrors error);
         LOG_DEBUG(message);\
         flushLogFile();\
         stateLogFile(NULL);\
-        dumperAddDebugInfoToAllLogsFile(dumper, "</pre>\n");\
+        /*dumperAddDebugInfoToAllLogsFile(dumper, "</pre>\n");\*/\
     } while (0)
 
 #endif

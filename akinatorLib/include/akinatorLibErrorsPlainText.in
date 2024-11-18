@@ -1,0 +1,6 @@
+ERROR_UNPACK(AKINATOR_INVALID_ARGUMENT,         1, "invalid argument, possibly set to NULL.\n")
+ERROR_UNPACK(AKINATOR_MEMORY_ALLOCATION_ERROR,  2, "memory allocation error.\n")
+ERROR_UNPACK(AKINATOR_FILE_OPENING_ERROR,       3, "couldn't open file error.\n")
+ERROR_UNPACK(AKINATOR_DUMPER_ERROR,             4, "error occured in dumper submodule.\n")
+ERROR_UNPACK(AKINATOR_BINARY_TREE_ERROR,        5, "error occured in binary tree submodule.\n")
+ERROR_UNPACK(AKINATOR_OBJ_ALREADY_EXISTS,       6, "object is already exists in database.\n")

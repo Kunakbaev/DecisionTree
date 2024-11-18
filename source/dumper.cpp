@@ -115,6 +115,7 @@ void dumperAddImgToAllLogsFile(Dumper* dumper, const char* imagePath) {
 }
 
 static DumperErrors addNodeDumpStructToBuffer(Dumper* dumper,
+                                              nodeDataToStringFuncPtr nodesDataPrinter,
                                               const Node* node,
                                               const char* color) {
     IF_ARG_NULL_RETURN(dumper);
@@ -130,6 +131,9 @@ static DumperErrors addNodeDumpStructToBuffer(Dumper* dumper,
 
     memset(tmpBuffer, 0, TMP_BUFFER_SIZE);
     if (node != NULL) {
+        const char* nodesDataStr = (*nodesDataPrinter)(node->data);
+        LOG_INFO("----------------");
+        LOG_DEBUG_VARS(nodesDataStr, (const char*)node->data, node->memBuffIndex);
         snprintf(tmpBuffer, TMP_BUFFER_SIZE,
         "iamnode_id_%zu [shape=none, margin=0, fontcolor=white, color=%s, label=< \n"
             "<TABLE cellspacing=\"0\"> \n"
@@ -138,7 +142,7 @@ static DumperErrors addNodeDumpStructToBuffer(Dumper* dumper,
                 "<TR><TD>no:  %zu</TD>\n"
                 "<TD>yes: %zu</TD></TR>\n"
                 "</TABLE> \n"
-                " >];\n", node->memBuffIndex, color, node->data, node->memBuffIndex, node->left, node->right);
+                " >];\n", node->memBuffIndex, color, nodesDataStr, node->memBuffIndex, node->left, node->right);
         // LOG_DEBUG_VARS(tmpBuffer, node->data);
     } else {
         snprintf(tmpBuffer, TMP_BUFFER_SIZE,
@@ -151,7 +155,8 @@ static DumperErrors addNodeDumpStructToBuffer(Dumper* dumper,
     return DUMPER_STATUS_OK;
 }
 
-DumperErrors dumperDumpSingleTreeNode(Dumper* dumper, const Node* node, const char* nodeColor) {
+DumperErrors dumperDumpSingleTreeNode(Dumper* dumper, nodeDataToStringFuncPtr nodesDataPrinter,
+                                      const Node* node, const char* nodeColor) {
     IF_ARG_NULL_RETURN(dumper);
 
     LOG_DEBUG("single node dumping ---------------------");
@@ -177,7 +182,7 @@ DumperErrors dumperDumpSingleTreeNode(Dumper* dumper, const Node* node, const ch
         pad=0.2\n\
     ", BUFFER_SIZE);
 
-    IF_ERR_RETURN(addNodeDumpStructToBuffer(dumper, node, nodeColor));
+    IF_ERR_RETURN(addNodeDumpStructToBuffer(dumper, nodesDataPrinter, node, nodeColor));
     strncat(buffer, "}\n", BUFFER_SIZE);
     fprintf(outputFile, buffer);
     fclose(outputFile);
@@ -223,7 +228,7 @@ static const char* getNodeColor(const Node* node, const NodesWithColor* coloring
     return DEFAULT_COLOR; // maybe log error
 }
 
-static DumperErrors drawDecisionTreeRecursively(Dumper* dumper, const DecisionTree* tree,
+static DumperErrors drawBinaryTreeRecursively(Dumper* dumper, const TypicalBinaryTree* tree,
                                                 size_t nodeInd, size_t parentInd,
                                                 const NodesWithColor* coloringRule,
                                                 size_t coloringRuleLen) {
@@ -238,7 +243,7 @@ static DumperErrors drawDecisionTreeRecursively(Dumper* dumper, const DecisionTr
     Node node = tree->memBuff[nodeInd];
 
     const char* color = getNodeColor(&node, coloringRule, coloringRuleLen);
-    IF_ERR_RETURN(addNodeDumpStructToBuffer(dumper, &node, color));
+    IF_ERR_RETURN(addNodeDumpStructToBuffer(dumper, tree->nodeDataToString, &node, color));
 
     if (parentInd != 0) {
         memset(tmpBuffer, 0, TMP_BUFFER_SIZE);
@@ -259,8 +264,8 @@ static DumperErrors drawDecisionTreeRecursively(Dumper* dumper, const DecisionTr
         strncat(buffer, tmpBuffer, BUFFER_SIZE);
     }
 
-    IF_ERR_RETURN(drawDecisionTreeRecursively(dumper, tree, node.left , nodeInd, coloringRule, coloringRuleLen));
-    IF_ERR_RETURN(drawDecisionTreeRecursively(dumper, tree, node.right, nodeInd, coloringRule, coloringRuleLen));
+    IF_ERR_RETURN(drawBinaryTreeRecursively(dumper, tree, node.left , nodeInd, coloringRule, coloringRuleLen));
+    IF_ERR_RETURN(drawBinaryTreeRecursively(dumper, tree, node.right, nodeInd, coloringRule, coloringRuleLen));
 
     return DUMPER_STATUS_OK;
 }
@@ -278,13 +283,13 @@ char* getLastImageFileName(const Dumper* dumper) {
     return tmpBuffer;
 }
 
-DumperErrors dumperDumpDecisionTree(Dumper* dumper, const DecisionTree* tree,
-                                    const NodesWithColor* coloringRule,
-                                    size_t coloringRuleLen) {
+DumperErrors dumperDumpBinaryTree(Dumper* dumper, const TypicalBinaryTree* tree,
+                                  const NodesWithColor* coloringRule,
+                                  size_t coloringRuleLen) {
     IF_ARG_NULL_RETURN(dumper);
     IF_ARG_NULL_RETURN(tree);
 
-    LOG_DEBUG("decision tree dumping ---------------------");
+    LOG_DEBUG("typical binary tree dumping ---------------------");
     ++dumper->numberOfLogsBefore;
     memset(fileNameBuffer, 0, FILE_NAME_BUFFER_SIZE);
     // TODO: rewrite with snprintf
@@ -309,7 +314,7 @@ DumperErrors dumperDumpDecisionTree(Dumper* dumper, const DecisionTree* tree,
         pad=0.2\n\
     ", BUFFER_SIZE);
 
-    IF_ERR_RETURN(drawDecisionTreeRecursively(dumper, tree, tree->root, 0, coloringRule, coloringRuleLen));
+    IF_ERR_RETURN(drawBinaryTreeRecursively(dumper, tree, tree->root, 0, coloringRule, coloringRuleLen));
 
     strncat(buffer, "}\n", BUFFER_SIZE);
     //LOG_DEBUG_VARS(buffer);

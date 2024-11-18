@@ -8,7 +8,10 @@ CFLAGS += -fsanitize=address
 LIB_PATH := /usr/lib/x86_64-linux-gnu/espeak-ng-data
 
 MY_LOG_LIB_NAME    := my_loglib
-SOURCE_DIR         := source
+SOURCE_DIR		   := source
+BIN_TREE_PATH 	   := typicalBinaryTree/source
+AKINATOR_PATH 	   := akinatorLib/source
+TERMINAL_INTERFACE := terminalInterface/source
 LIB_RUN_NAME       := decisionTree
 BUILD_DIR          := building
 LOGGER_EXT_LIB_DIR := external/LoggerLib
@@ -21,15 +24,31 @@ endif
 
 # -------------------------   LIB RUN   -----------------------------
 
-SRC 	   		   := $(SOURCE_DIR)/decisionTreeErrors.cpp $(SOURCE_DIR)/decisionTreeLib.cpp $(SOURCE_DIR)/dumper.cpp $(SOURCE_DIR)/main.cpp
+# SRC 	   		   := $(SOURCE_DIR)/decisionTreeErrors.cpp $(SOURCE_DIR)/decisionTreeLib.cpp $(SOURCE_DIR)/dumper.cpp $(SOURCE_DIR)/main.cpp
+SRC 	   		   := $(BIN_TREE_PATH)/typicalBinaryTree.cpp $(BIN_TREE_PATH)/typicalBinaryTreeErrors.cpp $(BIN_TREE_PATH)/ $(AKINATOR_PATH)/akinatorLib.cpp $(AKINATOR_PATH)/akinatorLibErrors.cpp $(TERMINAL_INTERFACE)/terminalInterface.cpp $(TERMINAL_INTERFACE)/terminalInterfaceErrors.cpp $(SOURCE_DIR)/dumper.cpp $(SOURCE_DIR)/main.cpp
 OBJ 	   		   := $(patsubst %.cpp, $(BUILD_DIR)/%.o, $(notdir ${SRC}))
 
 CFLAGS += -I $(LOGGER_EXT_LIB_DIR)/include
 
+bruh:
+	echo $(SRC)
+	echo $(OBJ)
+
 $(LIB_RUN_NAME): $(OBJ)
+	echo $(SRC)
+	echo $(OBJ)
 	$(CC) $^ -o $(BUILD_DIR)/$(LIB_RUN_NAME) -L $(LIB_PATH) -l$(MY_LOG_LIB_NAME) $(CFLAGS)
 
-$(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp $(BUILD_DIR)
+$(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp | $(BUILD_DIR)
+	$(CC) -c $< $(CFLAGS) -o $@ $(ASSERT_DEFINE) -L $(LIB_PATH)
+
+$(BUILD_DIR)/%.o: $(BIN_TREE_PATH)/%.cpp | $(BUILD_DIR)
+	$(CC) -c $< $(CFLAGS) -o $@ $(ASSERT_DEFINE) -L $(LIB_PATH)
+
+$(BUILD_DIR)/%.o: $(AKINATOR_PATH)/%.cpp | $(BUILD_DIR)
+	$(CC) -c $< $(CFLAGS) -o $@ $(ASSERT_DEFINE) -L $(LIB_PATH)
+
+$(BUILD_DIR)/%.o: $(TERMINAL_INTERFACE)/%.cpp | $(BUILD_DIR)
 	$(CC) -c $< $(CFLAGS) -o $@ $(ASSERT_DEFINE) -L $(LIB_PATH)
 
 run: $(LIB_RUN_NAME)

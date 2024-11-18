@@ -1,0 +1,8 @@
+ERROR_UNPACK(TYPICAL_BIN_TREE_MEMORY_ALLOCATION_ERROR, 1, "couldn't allocate memory.\n")
+ERROR_UNPACK(TYPICAL_BIN_TREE_INVALID_ARGUMENT,        2, "invalid argument, possibly set to NULL.\n")
+ERROR_UNPACK(TYPICAL_BIN_TREE_INVALID_INPUT_STRING,    3, "invalid input string, contains invalid # character.\n")
+ERROR_UNPACK(TYPICAL_BIN_TREE_OBJ_NOT_FOUND,           4, "object doesn't exist in database.\n\n")
+ERROR_UNPACK(TYPICAL_BIN_TREE_OBJ_ALREADY_EXISTS,      5, "object already exists in database.\n\n")
+ERROR_UNPACK(TYPICAL_BIN_TREE_FILE_OPENING_ERROR,      6, "couldn't open file error.\n")
+ERROR_UNPACK(TYPICAL_BIN_TREE_DUMPER_ERROR,            7, "error occured in dumper submodule.\n")
+ERROR_UNPACK(TYPICAL_BIN_TREE_SAME_OBJ_NAMES,          8, "names of 2 objects must not be equal.\n")

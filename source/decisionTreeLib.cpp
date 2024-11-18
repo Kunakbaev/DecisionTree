@@ -186,6 +186,7 @@ static DecisionTreeErrors readStringToNodesData(DecisionTree* tree, Node* node, 
 
     IF_NOT_COND_RETURN(!doesStringContainBreakChar(node->data),
                         DECISION_TREE_INVALID_INPUT_STRING);
+    return DECISION_TREE_STATUS_OK;
 }
 
 static DecisionTreeErrors getDecisionTreeNodeByObjName(const DecisionTree* tree, const char* objName, Node* result) {
