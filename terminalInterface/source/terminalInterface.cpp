@@ -257,10 +257,14 @@ static TerminalInterfaceErrors commonOrDifferenceHelperFunc(TypicalBinaryTree* t
     char** sentences = NULL;
     IF_ERR_RETURN(getGoodSentencesFromNodesData(tree, commonPathLen, commonPath, &sentences));
 
-    // last name should be name of an object (because it's a leaf)
-    printf("Definition for object: %s\n", sentences[commonPathLen - 1]);
     size_t prevNodeInd = commonPath[0];
-    for (size_t vertInd = 0; vertInd + 1 < commonPathLen; ++vertInd) {
+    if (isShowSame) {
+        printf("Same properties of objects:\n");
+    } else {
+        printf("Different property of 2 objects:\n");
+    }
+
+    for (size_t vertInd = 0; vertInd + isShowSame < commonPathLen; ++vertInd) {
         printf("    %s\n", sentences[vertInd]);
     }
 
@@ -280,14 +284,14 @@ static TerminalInterfaceErrors commonOrDifferenceHelperFunc(TypicalBinaryTree* t
 
 
 static TerminalInterfaceErrors terminalCmdShowCommonOf2Objects(Akinator* akinator) {
-    //IF_ERR_RETURN(commonOrDifferenceHelperFunc(akinator, true));
-    printf("not implemented yet\n");
+    IF_ERR_RETURN(commonOrDifferenceHelperFunc(&akinator->tree, true));
+    //printf("not implemented yet\n");
     return TERMINAL_INTERFACE_STATUS_OK;
 }
 
 static TerminalInterfaceErrors terminalCmdShowDifferenceOf2Objects(Akinator* akinator) {
-    //IF_ERR_RETURN(commonOrDifferenceHelperFunc(akinator, false));
-    printf("not implemented yet\n");
+    IF_ERR_RETURN(commonOrDifferenceHelperFunc(&akinator->tree, false));
+    //printf("not implemented yet\n");
     return TERMINAL_INTERFACE_STATUS_OK;
 }
 
