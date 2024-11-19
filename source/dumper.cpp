@@ -132,7 +132,7 @@ static DumperErrors addNodeDumpStructToBuffer(Dumper* dumper,
     memset(tmpBuffer, 0, TMP_BUFFER_SIZE);
     if (node != NULL) {
         const char* nodesDataStr = (*nodesDataPrinter)(node->data);
-        LOG_INFO("----------------");
+        // LOG_INFO("----------------");
         LOG_DEBUG_VARS(nodesDataStr, (const char*)node->data, node->memBuffIndex);
         snprintf(tmpBuffer, TMP_BUFFER_SIZE,
         "iamnode_id_%zu [shape=none, margin=0, fontcolor=white, color=%s, label=< \n"

@@ -172,7 +172,7 @@ TypicalBinaryTreeErrors addNewObjectToTypicalBinaryTree(TypicalBinaryTree* tree,
     Node* parent = &tree->memBuff[parentInd];
     LOG_DEBUG_VARS(parentInd, *newNodeIndex);
     if (!parentInd) {
-        LOG_ERROR("no parent, tree is empty");
+        LOG_DEBUG("no parent, tree is empty");
         tree->root = *newNodeIndex;
         node->parent = 0;
     } else {

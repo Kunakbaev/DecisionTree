@@ -84,7 +84,7 @@
 // }
 
 int main() {
-    setLoggingLevel(DEBUG);
+    //setLoggingLevel(DEBUG);
 
     Dumper dumper = {};
     dumperConstructor(&dumper, 10, "logs", "png");
