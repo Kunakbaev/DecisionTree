@@ -7,7 +7,8 @@
 
 #define FREE(x)         \
 do {                    \
-    free(x);            \
+    if (x != NULL)      \
+        free(x);        \
     (x) = NULL;         \
 } while(0)
 

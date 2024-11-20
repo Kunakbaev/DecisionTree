@@ -160,6 +160,7 @@ TerminalInterfaceErrors getGoodSentencesFromNodesData(const TypicalBinaryTree* t
     }
 
     FREE(nodesData);
+    FREE(answersArr);
 
     LOG_DEBUG_VARS("sentences:");
     for (size_t i = 0; i < pathLen; ++i)
@@ -179,7 +180,7 @@ TerminalInterfaceErrors getSentenceDefinitionFromPath(const TypicalBinaryTree* t
     char* tmpBuffPtr = tmpBuff;
 
     const char** nodesData = NULL;
-    size_t* answersArr     = NULL;
+    size_t*     answersArr = NULL;
     IF_ERR_RETURN(getNodesDataArray(tree, path, pathLen, &nodesData));
     IF_ERR_RETURN(getNodesAnswerOnQuestionsArr(tree, path, pathLen, &answersArr));
 
@@ -218,6 +219,9 @@ TerminalInterfaceErrors getSentenceDefinitionFromPath(const TypicalBinaryTree* t
     LOG_DEBUG_VARS(tmpBuff);
     //printf("%s\n", tmpBuff);
 
+    FREE(nodesData);
+    FREE(answersArr);
+
     return TERMINAL_INTERFACE_STATUS_OK;
 }
 
@@ -239,6 +243,7 @@ TerminalInterfaceErrors printDefinitionOfObject(const TypicalBinaryTree* tree, s
     IF_ERR_RETURN(getSentenceDefinitionFromPath(tree, pathLen, path, &sentence, true));
     LOG_DEBUG_VARS(sentence);
     printf("%s\n", sentence);
+    FREE(sentence);
 
     for (size_t sentenceInd = 0; sentenceInd < pathLen; ++sentenceInd)
         FREE(sentences[sentenceInd]);
@@ -486,6 +491,16 @@ static TerminalInterfaceErrors terminalCmdCommonAndDiffOf2Objects(Akinator* akin
     LOG_DEBUG_VARS(sentence);
     printf("%s: %s\n", objName2, sentence);
     FREE(sentence);
+
+    FREE(commonPath);
+    FREE(diffPath1);
+    FREE(diffPath2);
+    FREE(cntArr);
+    FREE(path1);
+    FREE(path2);
+    FREE(sentence);
+    FREE(objName1);
+    FREE(objName2);
 
     return TERMINAL_INTERFACE_STATUS_OK;
 }

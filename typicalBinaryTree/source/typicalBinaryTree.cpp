@@ -677,7 +677,7 @@ TypicalBinaryTreeErrors dumpCommonPathOf2ObjectsByValue(TypicalBinaryTree* tree,
 TypicalBinaryTreeErrors destructTypicalBinaryTree(TypicalBinaryTree* tree) {
     IF_ARG_NULL_RETURN(tree);
 
-    for (size_t nodeInd = 0; nodeInd < tree->memBuffSize; ++nodeInd) {
+    for (size_t nodeInd = 1; nodeInd < tree->memBuffSize; ++nodeInd) {
         FREE(tree->memBuff[nodeInd].data);
     }
     FREE(tree->memBuff);
